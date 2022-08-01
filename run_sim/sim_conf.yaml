@@ -1,0 +1,44 @@
+simName: ASTRO_TEST
+logFile: ASTRO_TEST.log
+pupilSize: 1000
+nSci: 1
+nIters: 1
+loopTime: .1 
+verbosity: 3
+simOversize: 1
+
+Atmosphere:
+  scrnNo: 1
+  scrnHeights: [10,1000,2500,5000,7500,10000,12500, 15000, 17500, 20000]
+  scrnStrengths: [1e-14,1e-17,5e-18,2e-18,1e-18,2e-18,3e-18,1e-18,1e-18,3e-19] 
+  windDirs: [0,0,0,0,0,0,0,0,0,0]
+  windSpeeds: [5,8,2,7.5,17.5,20,17.5,15,10,0.5]
+  wholeScrnSize: 2048
+  r0: 0.14 
+  L0: [20,20,20,20,20,20,20,20,20,20]
+
+Telescope:
+  telDiam: 32.5
+  mask: circle
+
+Beam:
+    power: 10 
+    wavelength:  1.55e-6
+    beamWaist: 17.5e-3
+    type : gaussian
+    propagationDir : up
+
+Receiver:
+    diameter: 250.0e-3
+    height: 700000
+
+Science:
+  0:
+    type: PSF
+    position: [0, 0]
+    FOV: 1.0
+    wavelength: 1.55e-6
+    propagationMode: Physical
+    propagationDir: up
+    pxls: 64
+    height: 700000
