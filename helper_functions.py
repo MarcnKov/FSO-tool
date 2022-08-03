@@ -1,7 +1,6 @@
-import sys
+import sys, os
 
-path  = "/home/marcinmust/Infinity/Astrolight/Simulations/soapy/"
-sys.path.insert(0, path)
+sys.path.append(os.getcwd())
 
 import logger
 from aotools import circle

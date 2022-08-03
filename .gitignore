@@ -1,2 +1,6 @@
 __pycache__
 ASTRO_TEST
+*.py~
+*.swp
+*.swo
+
