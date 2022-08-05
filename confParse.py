@@ -288,6 +288,46 @@ class PY_Configurator(object):
         # Always have sim, atmos, tel, recon, DMs, WFSs,  and Scis
         return 6 #sim, atmos, tel, Scis, beam, rx 
 
+    def set_simSize(self, x):
+        print("Sim size is set to : ", x)
+        self.simSize = x
+    
+    def set_gridScale(self, x):
+        print("grid scale is set to : ", x)
+        self.tel.telDiam = x
+    ''' 
+    def set_gridScale(self, x):
+        print("grid scale is set to : ", x)
+        self.tel.telDiam = x
+    
+    def set_gridScale(self, x):
+        print("grid scale is set to : ", x)
+        self.tel.telDiam = x
+    
+    def set_gridScale(self, x):
+        print("grid scale is set to : ", x)
+        self.tel.telDiam = x
+    
+    def set_gridScale(self, x):
+        print("grid scale is set to : ", x)
+        self.tel.telDiam = x
+    
+    def set_gridScale(self, x):
+        print("grid scale is set to : ", x)
+        self.tel.telDiam = x
+    
+    def set_gridScale(self, x):
+        print("grid scale is set to : ", x)
+        self.tel.telDiam = x
+    
+    def set_gridScale(self, x):
+        print("grid scale is set to : ", x)
+        self.tel.telDiam = x
+    
+    def set_gridScale(self, x):
+        print("grid scale is set to : ", x)
+        self.tel.telDiam = x
+    '''
 
 class YAML_Configurator(PY_Configurator):
 

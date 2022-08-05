@@ -14,8 +14,8 @@ from PyQt5.QtGui import QDoubleValidator, QValidator
 from fso_gui_ui import Ui_MainWindow
 from argparse import ArgumentParser
 
-VERBOSITY   = 3
-ACCEPTED    = QValidator.Acceptable
+VERBOSITY = 3
+
 class GUI(QMainWindow):
 
     def __init__(self, sim = None, verbosity = None):
@@ -40,7 +40,6 @@ class GUI(QMainWindow):
         #initialize variables
         self.sim = sim
         self.config = self.sim.config
-        self.output = self.ui.sim_prog_label.setText
 
         #initialize GUI input fields
         self.init_input_fields()
@@ -48,50 +47,36 @@ class GUI(QMainWindow):
         self.init_plots()
         
         #verify and validate user input
-        self.verify_and_set_user_input()
-        
+        self.verify_user_input()
+
         #display GUI
         self.show()
-     
-    def verify_and_set_user_input(self):
-        
-        #grid size
-        self.ui.sim_grid_size_input.editingFinished.connect( lambda : 
-                self.validate_num(self.ui.sim_grid_size_input, self.config.set_simSize, 0, 10000, 0))
-        
-        #grid scale
-        self.ui.sim_grid_scale_input.editingFinished.connect( lambda : 
-                self.validate_num(self.ui.sim_grid_scale_input, self.config.set_gridScale, 0.1, 100, -1))
-
-
-    def validate_num(self, input_field, set_field, low, high, digits):
-        
-        if (digits == 0):
-            num_type = int 
-        else:
-            num_type = float
-        
-        input_num = input_field.text().replace('.',',')
-
-        validation_rule = QDoubleValidator(low, high, digits)
-        validation_cond = validation_rule.validate(input_num, 0)[0] 
-        
-        if (validation_cond == ACCEPTED):
-
-            self.output("Input is accepted !")
-            set_field(num_type(input_num.replace(',','.'))) 
-            input_field.setFocus()
-
-        else:
-            self.output("Input is invalid. Valid input is "         +   \
-                                             str(num_type)          +   \
-                                            " number ranging from " +   \
-                                            str(low) +  " to "      +   \
-                                            str(high) )
-
-            input_field.setText('')
     
-    
+    def verify_user_input(self):
+        
+        #self.ui.sim_grid_size_input.editingFinished.connect(self.validate_num(0,10000,0))
+        self.ui.sim_grid_size_input.editingFinished.connect(self.validate_num)
+
+    def validate_num(self, low, high, digits):
+
+        validation_rule = QDoubleValidator(low,high,digits)
+        
+        if (validation_rule.validate(self.ui.sim_grid_size_input.text(),0)[0] == QValidator.Acceptable):
+            self.ui.sim_grid_size_input.setFocus()
+        else:
+            self.ui.sim_grid_size_input.setText('')
+
+    def validate_num(self):
+
+        validation_rule = QDoubleValidator(0,10000,0)
+        
+        if (validation_rule.validate(self.ui.sim_grid_size_input.text(),0)[0] == QValidator.Acceptable):
+            self.ui.prog_label.setText("Input accepted")
+            self.ui.sim_grid_size_input.setFocus()
+        else:
+            self.ui.prog_label.setText("Input is invalid. Valid input is integer from 0 to 10000")
+            self.ui.sim_grid_size_input.setText('')
+
     def init(self):
         
         pass

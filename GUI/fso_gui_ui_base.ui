@@ -21,46 +21,46 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>310</y>
+      <y>340</y>
       <width>171</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Power  (W)</string>
+     <string>Power  (mW)</string>
     </property>
    </widget>
    <widget class="QLabel" name="beam_wvl_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>340</y>
+      <y>370</y>
       <width>181</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Wavelength  (m)</string>
+     <string>Wavelength  (nm)</string>
     </property>
    </widget>
    <widget class="QLabel" name="beam_waist_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>370</y>
+      <y>400</y>
       <width>171</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Beam waist (m)</string>
+     <string>Beam waist (mm)</string>
     </property>
    </widget>
    <widget class="QLabel" name="beam_prop_dir_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>400</y>
+      <y>430</y>
       <width>141</width>
       <height>17</height>
      </rect>
@@ -73,7 +73,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>400</y>
+      <y>430</y>
       <width>301</width>
       <height>25</height>
      </rect>
@@ -89,24 +89,37 @@
      </property>
     </item>
    </widget>
+   <widget class="QSlider" name="sim_grid_size_slider">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>140</y>
+      <width>301</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
    <widget class="QLabel" name="sim_grid_size_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>150</y>
-      <width>181</width>
+      <y>160</y>
+      <width>191</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Grid size (pxl)</string>
+     <string>Grid size (pxl x pxl)</string>
     </property>
    </widget>
-   <widget class="QLabel" name="sim_num_iter_label">
+   <widget class="QLabel" name="sim_num_inter_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>210</y>
+      <y>220</y>
       <width>181</width>
       <height>17</height>
      </rect>
@@ -119,20 +132,20 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>180</y>
+      <y>190</y>
       <width>181</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Grid scale (m)</string>
+     <string>Grid scale (m x m)</string>
     </property>
    </widget>
    <widget class="QLabel" name="sim_sample_rate_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>240</y>
+      <y>250</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -145,7 +158,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>680</y>
+      <y>700</y>
       <width>181</width>
       <height>17</height>
      </rect>
@@ -156,14 +169,14 @@
      </font>
     </property>
     <property name="text">
-     <string>Aperture diam.  (m)</string>
+     <string>Aperture diam.  (mm)</string>
     </property>
    </widget>
    <widget class="QLabel" name="rx_elevation_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>740</y>
+      <y>760</y>
       <width>121</width>
       <height>17</height>
      </rect>
@@ -176,20 +189,20 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>710</y>
+      <y>730</y>
       <width>121</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Height (m)</string>
+     <string>Height (km)</string>
     </property>
    </widget>
    <widget class="QLabel" name="atmos_n_scrn_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>520</y>
+      <y>540</y>
       <width>181</width>
       <height>17</height>
      </rect>
@@ -202,7 +215,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>580</y>
+      <y>600</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -215,20 +228,20 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>550</y>
+      <y>570</y>
       <width>121</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Fried r0  (m)</string>
+     <string>Fried r0  (cm)</string>
     </property>
    </widget>
    <widget class="QLabel" name="atmos_wind_dir_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>610</y>
+      <y>630</y>
       <width>161</width>
       <height>17</height>
      </rect>
@@ -237,48 +250,30 @@
      <string>Wind direction  (deg)</string>
     </property>
    </widget>
-   <widget class="QSlider" name="atmos_scrn_size_slider">
+   <widget class="QSlider" name="atmos_screen_size_slider">
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>460</y>
+      <y>490</y>
       <width>301</width>
       <height>51</height>
      </rect>
     </property>
-    <property name="maximum">
-     <number>13</number>
-    </property>
-    <property name="pageStep">
-     <number>1</number>
-    </property>
-    <property name="value">
-     <number>0</number>
-    </property>
-    <property name="sliderPosition">
-     <number>0</number>
-    </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
     </property>
-    <property name="tickPosition">
-     <enum>QSlider::TicksBelow</enum>
-    </property>
-    <property name="tickInterval">
-     <number>1</number>
-    </property>
    </widget>
-   <widget class="QLabel" name="atmos_scrn_size_label">
+   <widget class="QLabel" name="atmos_screen_size_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>480</y>
-      <width>111</width>
+      <y>510</y>
+      <width>191</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Screen size (pxl): </string>
+     <string>Screen size (pxl x pxl)</string>
     </property>
    </widget>
    <widget class="QGroupBox" name="sim_groupBox">
@@ -287,7 +282,7 @@
       <x>10</x>
       <y>120</y>
       <width>511</width>
-      <height>151</height>
+      <height>171</height>
      </rect>
     </property>
     <property name="title">
@@ -303,17 +298,17 @@
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>60</y>
+       <y>70</y>
        <width>301</width>
        <height>25</height>
       </rect>
      </property>
     </widget>
-    <widget class="QLineEdit" name="sim_num_iter_input">
+    <widget class="QLineEdit" name="sim_num_inter_input">
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>90</y>
+       <y>100</y>
        <width>301</width>
        <height>25</height>
       </rect>
@@ -323,23 +318,10 @@
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>120</y>
+       <y>130</y>
        <width>301</width>
        <height>25</height>
       </rect>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="sim_grid_size_input">
-     <property name="geometry">
-      <rect>
-       <x>200</x>
-       <y>30</y>
-       <width>301</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="inputMethodHints">
-      <set>Qt::ImhDigitsOnly</set>
      </property>
     </widget>
    </widget>
@@ -347,7 +329,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>280</y>
+      <y>310</y>
       <width>511</width>
       <height>151</height>
      </rect>
@@ -360,9 +342,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>440</y>
+      <y>480</y>
       <width>511</width>
-      <height>201</height>
+      <height>171</height>
      </rect>
     </property>
     <property name="title">
@@ -372,7 +354,7 @@
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>110</y>
+       <y>80</y>
        <width>301</width>
        <height>25</height>
       </rect>
@@ -382,7 +364,7 @@
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>140</y>
+       <y>110</y>
        <width>301</width>
        <height>25</height>
       </rect>
@@ -392,7 +374,7 @@
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>170</y>
+       <y>140</y>
        <width>301</width>
        <height>25</height>
       </rect>
@@ -402,23 +384,10 @@
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>80</y>
+       <y>50</y>
        <width>301</width>
        <height>25</height>
       </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="atmos_scrn_size_label2">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>40</y>
-       <width>61</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
      </property>
     </widget>
    </widget>
@@ -426,7 +395,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>650</y>
+      <y>670</y>
       <width>511</width>
       <height>121</height>
      </rect>
@@ -439,7 +408,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>790</y>
+      <y>810</y>
       <width>511</width>
       <height>61</height>
      </rect>
@@ -517,7 +486,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>60</y>
+      <y>70</y>
       <width>491</width>
       <height>21</height>
      </rect>
@@ -630,7 +599,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>680</y>
+      <y>700</y>
       <width>301</width>
       <height>25</height>
      </rect>
@@ -640,7 +609,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>710</y>
+      <y>730</y>
       <width>301</width>
       <height>25</height>
      </rect>
@@ -650,7 +619,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>740</y>
+      <y>760</y>
       <width>301</width>
       <height>25</height>
      </rect>
@@ -660,7 +629,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>310</y>
+      <y>340</y>
       <width>301</width>
       <height>25</height>
      </rect>
@@ -670,7 +639,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>340</y>
+      <y>370</y>
       <width>301</width>
       <height>25</height>
      </rect>
@@ -680,7 +649,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>370</y>
+      <y>400</y>
       <width>301</width>
       <height>25</height>
      </rect>
@@ -690,7 +659,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>0</y>
+      <y>10</y>
       <width>511</width>
       <height>91</height>
      </rect>
@@ -701,9 +670,9 @@
     <widget class="QLabel" name="sim_prog_label">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>16</x>
        <y>30</y>
-       <width>491</width>
+       <width>481</width>
        <height>20</height>
       </rect>
      </property>
@@ -723,8 +692,9 @@
    <zorder>beam_waist_label</zorder>
    <zorder>beam_prop_dir_label</zorder>
    <zorder>beam_prop_dir_box</zorder>
+   <zorder>sim_grid_size_slider</zorder>
    <zorder>sim_grid_size_label</zorder>
-   <zorder>sim_num_iter_label</zorder>
+   <zorder>sim_num_inter_label</zorder>
    <zorder>sim_grid_scale_label</zorder>
    <zorder>sim_sample_rate_label</zorder>
    <zorder>rx_ap_diam_label</zorder>
@@ -734,8 +704,8 @@
    <zorder>atmos_wind_speed_label</zorder>
    <zorder>atmos_fried_r0_label</zorder>
    <zorder>atmos_wind_dir_label</zorder>
-   <zorder>atmos_scrn_size_slider</zorder>
-   <zorder>atmos_scrn_size_label</zorder>
+   <zorder>atmos_screen_size_slider</zorder>
+   <zorder>atmos_screen_size_label</zorder>
    <zorder>sim_prog_bar</zorder>
    <zorder>rx_int_dist_frame</zorder>
    <zorder>phase_screen_frame</zorder>

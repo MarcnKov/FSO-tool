@@ -102,7 +102,7 @@ import sys, os
 
 sys.path.append(os.getcwd())
 
-
+import confParse
 import numpy
 #Use pyfits or astropy for fits file handling
 try:
@@ -152,7 +152,7 @@ class Sim(object):
 
     def __init__(self, configFile=None):
         if not configFile:
-            configFile = "conf/testConf.py"
+            configFile = "run_sim/sim_conf.yaml"
 
         self.readParams(configFile)
 
