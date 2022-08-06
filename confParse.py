@@ -287,7 +287,8 @@ class PY_Configurator(object):
     def __len__(self):
         # Always have sim, atmos, tel, recon, DMs, WFSs,  and Scis
         return 6 #sim, atmos, tel, Scis, beam, rx 
-
+    
+    #simulation setters
     def set_simSize(self, x):
         print("Sim size is set to : ", x)
         self.simSize = x
@@ -295,6 +296,36 @@ class PY_Configurator(object):
     def set_gridScale(self, x):
         print("grid scale is set to : ", x)
         self.tel.telDiam = x
+    
+    def set_nIters(self, x):
+        print("nIters is set to : ", x)
+        self.sim.nIters = x
+    
+    def set_loopTime(self, x):
+        print("sampling rate is set to : ", x)
+        self.sim.loopTime = x
+
+    #optical beam setters 
+    def set_power(self, x):
+        print("optical beam power is set to : ", x)
+        self.beam.power = x
+    
+    def set_wvl(self, x):
+        print("optical wvl is set to : ", x)
+        self.beam.wavelength = x
+    
+    def set_beamWaist(self, x):
+        print("optical beam is set to : ", x)
+        self.beam.beamWaist = x
+    
+    def set_propagationDir(self, x):
+        print("Optical propagation dir is set to : ", x)
+        self.beam.propagationDir = x
+    
+    #atmosphere params
+    def set_wholeScrnSize(self, x):
+        print("atmos scrn size is set to : ", x)
+        self.atmos.wholeScrnSize = x
     ''' 
     def set_gridScale(self, x):
         print("grid scale is set to : ", x)
@@ -323,12 +354,7 @@ class PY_Configurator(object):
     def set_gridScale(self, x):
         print("grid scale is set to : ", x)
         self.tel.telDiam = x
-    
-    def set_gridScale(self, x):
-        print("grid scale is set to : ", x)
-        self.tel.telDiam = x
     '''
-
 class YAML_Configurator(PY_Configurator):
 
     def readfile(self):

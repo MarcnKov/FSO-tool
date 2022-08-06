@@ -80,12 +80,12 @@
     </property>
     <item>
      <property name="text">
-      <string>Uplink</string>
+      <string>up</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Downlink</string>
+      <string>down</string>
      </property>
     </item>
    </widget>
@@ -323,7 +323,7 @@
      <property name="geometry">
       <rect>
        <x>200</x>
-       <y>120</y>
+       <y>130</y>
        <width>301</width>
        <height>25</height>
       </rect>

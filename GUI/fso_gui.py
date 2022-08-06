@@ -16,6 +16,10 @@ from argparse import ArgumentParser
 
 VERBOSITY   = 3
 ACCEPTED    = QValidator.Acceptable
+INT_TYPE    = 0
+DBL_TYPE    = -1
+
+
 class GUI(QMainWindow):
 
     def __init__(self, sim = None, verbosity = None):
@@ -55,16 +59,50 @@ class GUI(QMainWindow):
      
     def verify_and_set_user_input(self):
         
+        #Modify simulation logical window input fields
+        
         #grid size
         self.ui.sim_grid_size_input.editingFinished.connect( lambda : 
-                self.validate_num(self.ui.sim_grid_size_input, self.config.set_simSize, 0, 10000, 0))
-        
+                self.validate_num(self.ui.sim_grid_size_input, self.config.set_simSize, 0, 10000, INT_TYPE))
         #grid scale
         self.ui.sim_grid_scale_input.editingFinished.connect( lambda : 
-                self.validate_num(self.ui.sim_grid_scale_input, self.config.set_gridScale, 0.1, 100, -1))
+                self.validate_num(self.ui.sim_grid_scale_input, self.config.set_gridScale, 0.1, 100, DBL_TYPE))
+        #num iterations
+        self.ui.sim_num_iter_input.editingFinished.connect( lambda : 
+                self.validate_num(self.ui.sim_num_iter_input, self.config.set_nIters, 1, 10000, INT_TYPE))
+        #sampling rate
+        self.ui.sim_sample_rate_input.editingFinished.connect( lambda :
+                self.validate_num(self.ui.sim_sample_rate_input, self.config.set_loopTime, 0, 10000, DBL_TYPE))
 
+        #Modify optical beam logical window input fields
+
+        #power
+        self.ui.beam_power_input.editingFinished.connect( lambda : 
+                self.validate_num(self.ui.beam_power_input, self.config.set_power, 0, 10000, DBL_TYPE))
+        #wvl
+        self.ui.beam_wvl_input.editingFinished.connect( lambda : 
+                self.validate_num(self.ui.beam_wvl_input, self.config.set_wvl, 0, 10000, DBL_TYPE))
+        #beam waist
+        self.ui.beam_waist_input.editingFinished.connect( lambda : 
+                self.validate_num(self.ui.beam_waist_input, self.config.set_beamWaist, 0, 10000, DBL_TYPE))
+        #prop dir
+        self.ui.beam_prop_dir_box.activated.connect(lambda :
+                self.config.set_propagationDir(self.ui.beam_prop_dir_box.currentText())) 
+        
+        #Modify atmosphere logical window input fields
+        
+        #atmos scrn size
+        self.ui.atmos_scrn_size_slider.valueChanged.connect(self.update_slider)
+        
+            
+    def update_slider(self):
+        
+        slider_value = 2**self.ui.atmos_scrn_size_slider.value()
+        self.ui.atmos_scrn_size_label2.setText(str(slider_value))
+        self.config.set_wholeScrnSize(slider_value)
 
     def validate_num(self, input_field, set_field, low, high, digits):
+
         
         if (digits == 0):
             num_type = int 
@@ -135,13 +173,15 @@ class GUI(QMainWindow):
         self.ui.beam_power_input.insert(str(self.config.beam.power))
         self.ui.beam_wvl_input.insert(str(self.config.beam.wavelength))
         self.ui.beam_waist_input.insert(str(self.config.beam.beamWaist))
+        self.ui.beam_prop_dir_box.setCurrentIndex(0)
+
         if (self.config.beam.propagationDir == 'up'):
             self.ui.beam_prop_dir_box.setCurrentIndex(0)
         else:
             self.ui.beam_prop_dir_box.setCurrentIndex(1)
 
         #atmosphere field
-        scrn_size_log2 = np.log2(self.config.atmos.wholeScrnSize)
+        scrn_size_log2 = int(np.log2(self.config.atmos.wholeScrnSize))
         self.ui.atmos_scrn_size_slider.setProperty("value",scrn_size_log2)
         self.ui.atmos_scrn_size_slider.setSliderPosition(scrn_size_log2)
         self.ui.atmos_scrn_size_label2.setText(str(self.config.atmos.wholeScrnSize))
