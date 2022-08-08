@@ -326,23 +326,37 @@ class PY_Configurator(object):
     def set_wholeScrnSize(self, x):
         print("atmos scrn size is set to : ", x)
         self.atmos.wholeScrnSize = x
-    ''' 
-    def set_gridScale(self, x):
-        print("grid scale is set to : ", x)
-        self.tel.telDiam = x
     
-    def set_gridScale(self, x):
-        print("grid scale is set to : ", x)
-        self.tel.telDiam = x
+    def set_scrnNo(self, x):
+        print("screen number is set to : ", x)
+        self.atmos.scrnNo = x
     
-    def set_gridScale(self, x):
-        print("grid scale is set to : ", x)
-        self.tel.telDiam = x
+    def set_r0(self, x):
+        print("r0 is set to : ", x)
+        self.atmos.r0 = x
     
-    def set_gridScale(self, x):
-        print("grid scale is set to : ", x)
-        self.tel.telDiam = x
+    def set_windDirs(self, x):
+        print("Wind direction is set to", x)
+        self.windDirs = numpy.repeat(x, int(self.atmos.scrnNo))
     
+    def set_windSpeeds(self, x):
+        print("Wind speeds are set to", x)
+        self.windSpeeds = numpy.repeat(x, int(self.atmos.scrnNo))
+
+    #rx params
+    def set_diameter(self, x):
+        print("rx diameter is set to : ", x)
+        self.rx.diameter = x
+    
+    def set_height(self, x):
+        print("height is set to : ", x)
+        self.rx.height = x
+    
+    def set_elevationAngle(self, x):
+        print("elevation is set to : ", x)
+        self.rx.elevationAngle = x
+    
+    '''
     def set_gridScale(self, x):
         print("grid scale is set to : ", x)
         self.tel.telDiam = x
@@ -969,6 +983,7 @@ class BeamConfig(ConfigObj):
             raise ConfigurationError("Must supply beamWaist for Beam")
         self.beamWaist = float(self.beamWaist)
 
+        
 
 class ReceiverConfig(ConfigObj):
     
@@ -986,8 +1001,15 @@ class ReceiverConfig(ConfigObj):
 
         ==================      ============================================
 
-    """
+   Optional:
+        ==================== =================================   ===========
+        **Parameter**        **Description**                     **Default**
+        -------------------- ---------------------------------   -----------
+        ``elevationAngle``     float:                                0
+        ==================== =================================   ===========
 
+    """
+ 
 
     requiredParams = [  "diameter",
                         "height"
@@ -995,7 +1017,7 @@ class ReceiverConfig(ConfigObj):
 
     calculatedParams = []
      
-    optionalParams = []
+    optionalParams = [("elevationAngle", 90)]
 
     allowedAttrs = copy.copy(requiredParams + calculatedParams + CONFIG_ATTRIBUTES)
     for p in optionalParams:
@@ -1011,7 +1033,8 @@ class ReceiverConfig(ConfigObj):
         if (self.height is None):
             raise ConfigurationError("Must supply height for Receiver")
         self.height = float(self.height)
-        
+        self.elevationAngle = float(self.elevationAngle)
+
 
 def loadSoapyConfig(configfile):
 

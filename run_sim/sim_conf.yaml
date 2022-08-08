@@ -8,7 +8,7 @@ verbosity: 3
 simOversize: 1
 
 Atmosphere:
-  scrnNo: 1
+  scrnNo: 10
   scrnHeights: [10,1000,2500,5000,7500,10000,12500, 15000, 17500, 20000]
   scrnStrengths: [1e-14,1e-17,5e-18,2e-18,1e-18,2e-18,3e-18,1e-18,1e-18,3e-19] 
   windDirs: [0,0,0,0,0,0,0,0,0,0]
@@ -31,6 +31,7 @@ Beam:
 Receiver:
     diameter: 250.0e-3
     height: 700000
+    elevationAngle: 90
 
 Science:
   0:

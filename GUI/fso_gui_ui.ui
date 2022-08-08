@@ -61,20 +61,20 @@
      <rect>
       <x>20</x>
       <y>400</y>
-      <width>141</width>
+      <width>161</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Proagation direction</string>
+     <string>Propagation direction</string>
     </property>
    </widget>
    <widget class="QComboBox" name="beam_prop_dir_box">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>200</x>
       <y>400</y>
-      <width>301</width>
+      <width>331</width>
       <height>25</height>
      </rect>
     </property>
@@ -164,12 +164,12 @@
      <rect>
       <x>20</x>
       <y>740</y>
-      <width>121</width>
+      <width>151</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Elevation  (deg)</string>
+     <string>Elevation angle  (deg)</string>
     </property>
    </widget>
    <widget class="QLabel" name="rx_height_label">
@@ -229,7 +229,7 @@
      <rect>
       <x>20</x>
       <y>610</y>
-      <width>161</width>
+      <width>141</width>
       <height>17</height>
      </rect>
     </property>
@@ -240,9 +240,9 @@
    <widget class="QSlider" name="atmos_scrn_size_slider">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>200</x>
       <y>460</y>
-      <width>301</width>
+      <width>331</width>
       <height>51</height>
      </rect>
     </property>
@@ -286,7 +286,7 @@
      <rect>
       <x>10</x>
       <y>120</y>
-      <width>511</width>
+      <width>531</width>
       <height>151</height>
      </rect>
     </property>
@@ -302,9 +302,9 @@
     <widget class="QLineEdit" name="sim_grid_scale_input">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>190</x>
        <y>60</y>
-       <width>301</width>
+       <width>331</width>
        <height>25</height>
       </rect>
      </property>
@@ -312,9 +312,9 @@
     <widget class="QLineEdit" name="sim_num_iter_input">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>190</x>
        <y>90</y>
-       <width>301</width>
+       <width>331</width>
        <height>25</height>
       </rect>
      </property>
@@ -322,9 +322,9 @@
     <widget class="QLineEdit" name="sim_sample_rate_input">
      <property name="geometry">
       <rect>
-       <x>200</x>
-       <y>130</y>
-       <width>301</width>
+       <x>190</x>
+       <y>120</y>
+       <width>331</width>
        <height>25</height>
       </rect>
      </property>
@@ -332,9 +332,9 @@
     <widget class="QLineEdit" name="sim_grid_size_input">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>190</x>
        <y>30</y>
-       <width>301</width>
+       <width>331</width>
        <height>25</height>
       </rect>
      </property>
@@ -348,7 +348,7 @@
      <rect>
       <x>10</x>
       <y>280</y>
-      <width>511</width>
+      <width>531</width>
       <height>151</height>
      </rect>
     </property>
@@ -361,7 +361,7 @@
      <rect>
       <x>10</x>
       <y>440</y>
-      <width>511</width>
+      <width>531</width>
       <height>201</height>
      </rect>
     </property>
@@ -371,9 +371,9 @@
     <widget class="QLineEdit" name="atmos_fried_r0_input">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>170</x>
        <y>110</y>
-       <width>301</width>
+       <width>351</width>
        <height>25</height>
       </rect>
      </property>
@@ -381,9 +381,9 @@
     <widget class="QLineEdit" name="atmos_wind_speed_input">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>310</x>
        <y>140</y>
-       <width>301</width>
+       <width>211</width>
        <height>25</height>
       </rect>
      </property>
@@ -391,9 +391,9 @@
     <widget class="QLineEdit" name="atmos_wind_dir_input">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>310</x>
        <y>170</y>
-       <width>301</width>
+       <width>211</width>
        <height>25</height>
       </rect>
      </property>
@@ -401,9 +401,9 @@
     <widget class="QLineEdit" name="atmos_n_scrn_input">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>170</x>
        <y>80</y>
-       <width>301</width>
+       <width>351</width>
        <height>25</height>
       </rect>
      </property>
@@ -421,13 +421,33 @@
       <string/>
      </property>
     </widget>
+    <widget class="QComboBox" name="atmos_wind_speed_input_conf">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>140</y>
+       <width>131</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>single input</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>array input</string>
+      </property>
+     </item>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="rx_groupBox">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>650</y>
-      <width>511</width>
+      <width>531</width>
       <height>121</height>
      </rect>
     </property>
@@ -440,7 +460,7 @@
      <rect>
       <x>10</x>
       <y>790</y>
-      <width>511</width>
+      <width>531</width>
       <height>61</height>
      </rect>
     </property>
@@ -450,7 +470,7 @@
     <widget class="QPushButton" name="init_sim_pushButton">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>30</x>
        <y>30</y>
        <width>89</width>
        <height>25</height>
@@ -463,7 +483,7 @@
     <widget class="QPushButton" name="start_sim_pushButton">
      <property name="geometry">
       <rect>
-       <x>110</x>
+       <x>130</x>
        <y>30</y>
        <width>89</width>
        <height>25</height>
@@ -476,7 +496,7 @@
     <widget class="QPushButton" name="stop_sim_pushButton">
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>230</x>
        <y>30</y>
        <width>89</width>
        <height>25</height>
@@ -489,7 +509,7 @@
     <widget class="QPushButton" name="restart_sim_pushButton">
      <property name="geometry">
       <rect>
-       <x>310</x>
+       <x>330</x>
        <y>30</y>
        <width>89</width>
        <height>25</height>
@@ -502,7 +522,7 @@
     <widget class="QPushButton" name="save_sim_pushButton">
      <property name="geometry">
       <rect>
-       <x>410</x>
+       <x>430</x>
        <y>30</y>
        <width>89</width>
        <height>25</height>
@@ -518,7 +538,7 @@
      <rect>
       <x>20</x>
       <y>60</y>
-      <width>491</width>
+      <width>511</width>
       <height>21</height>
      </rect>
     </property>
@@ -629,9 +649,9 @@
    <widget class="QLineEdit" name="rx_ap_diam_input">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>180</x>
       <y>680</y>
-      <width>301</width>
+      <width>351</width>
       <height>25</height>
      </rect>
     </property>
@@ -639,9 +659,9 @@
    <widget class="QLineEdit" name="rx_height_input">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>180</x>
       <y>710</y>
-      <width>301</width>
+      <width>351</width>
       <height>25</height>
      </rect>
     </property>
@@ -649,9 +669,9 @@
    <widget class="QLineEdit" name="rx_elevation_input">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>180</x>
       <y>740</y>
-      <width>301</width>
+      <width>351</width>
       <height>25</height>
      </rect>
     </property>
@@ -659,9 +679,9 @@
    <widget class="QLineEdit" name="beam_power_input">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>200</x>
       <y>310</y>
-      <width>301</width>
+      <width>331</width>
       <height>25</height>
      </rect>
     </property>
@@ -669,9 +689,9 @@
    <widget class="QLineEdit" name="beam_wvl_input">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>200</x>
       <y>340</y>
-      <width>301</width>
+      <width>331</width>
       <height>25</height>
      </rect>
     </property>
@@ -679,9 +699,9 @@
    <widget class="QLineEdit" name="beam_waist_input">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>200</x>
       <y>370</y>
-      <width>301</width>
+      <width>331</width>
       <height>25</height>
      </rect>
     </property>
@@ -691,7 +711,7 @@
      <rect>
       <x>10</x>
       <y>0</y>
-      <width>511</width>
+      <width>531</width>
       <height>91</height>
      </rect>
     </property>
@@ -703,7 +723,7 @@
       <rect>
        <x>10</x>
        <y>30</y>
-       <width>491</width>
+       <width>521</width>
        <height>20</height>
       </rect>
      </property>
@@ -711,6 +731,26 @@
       <string/>
      </property>
     </widget>
+   </widget>
+   <widget class="QComboBox" name="atmos_wind_dir_input_conf">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>610</y>
+      <width>131</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>single input</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>array input</string>
+     </property>
+    </item>
    </widget>
    <zorder>groupBox</zorder>
    <zorder>run_sim_groupBox</zorder>
@@ -749,6 +789,7 @@
    <zorder>beam_power_input</zorder>
    <zorder>beam_wvl_input</zorder>
    <zorder>beam_waist_input</zorder>
+   <zorder>atmos_wind_dir_input_conf</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
