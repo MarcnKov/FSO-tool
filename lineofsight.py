@@ -46,7 +46,6 @@ import matplotlib.pyplot as plt
 
 import aotools
 from aotools import opticalpropagation
-from turbulence_sim_helper import helper_functions as help_fun
 
 import sys, os
 sys.path.append(os.getcwd())
@@ -130,7 +129,7 @@ class LineOfSight(object):
         self.waist      = self.soapy_config.beam.beamWaist
         self.beam_type  = self.soapy_config.beam.type
 
-        self.SimHelper = help_fun.SimHelper(soapyConfig)
+        self.SimHelper = help_func.SimHelper(soapyConfig)
 
         self.calcInitParams(out_pixel_scale, nx_out_pixels)
         #self.allocDataArrays()
@@ -326,8 +325,7 @@ class LineOfSight(object):
                                                                     z)
             z_total += z
         
-        # Go through and propagate between phase screens
-    
+        #Propagate electrical field via phase screens
         for i in range(0, self.n_layers):
             
             '''

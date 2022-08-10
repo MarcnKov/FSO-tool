@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1122</width>
+    <width>1819</width>
     <height>922</height>
    </rect>
   </property>
@@ -516,7 +516,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>RESTART</string>
+      <string>RESET</string>
      </property>
     </widget>
     <widget class="QPushButton" name="save_sim_pushButton">
@@ -537,7 +537,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>60</y>
+      <y>80</y>
       <width>511</width>
       <height>21</height>
      </rect>
@@ -545,106 +545,6 @@
     <property name="value">
      <number>24</number>
     </property>
-   </widget>
-   <widget class="QFrame" name="rx_int_dist_frame">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>30</y>
-      <width>561</width>
-      <height>311</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
-   <widget class="QFrame" name="phase_screen_frame">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>380</y>
-      <width>561</width>
-      <height>261</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="rx_int_distr_label">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>10</y>
-      <width>231</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Receiver Intensity distribution</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="phase_screen_label">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>360</y>
-      <width>231</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Phase screens</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="perform_metrics_label">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>650</y>
-      <width>231</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Performance metrics</string>
-    </property>
-   </widget>
-   <widget class="QFrame" name="perform_metrics_frame">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>670</y>
-      <width>561</width>
-      <height>211</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-    <widget class="QScrollBar" name="verticalScrollBar">
-     <property name="geometry">
-      <rect>
-       <x>540</x>
-       <y>0</y>
-       <width>21</width>
-       <height>211</height>
-      </rect>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-    </widget>
    </widget>
    <widget class="QLineEdit" name="rx_ap_diam_input">
     <property name="geometry">
@@ -712,7 +612,7 @@
       <x>10</x>
       <y>0</y>
       <width>531</width>
-      <height>91</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="title">
@@ -724,6 +624,32 @@
        <x>10</x>
        <y>30</y>
        <width>521</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="sim_prog_time_label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>251</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="sim_prog_iters_label">
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>60</y>
+       <width>241</width>
        <height>20</height>
       </rect>
      </property>
@@ -752,6 +678,78 @@
      </property>
     </item>
    </widget>
+   <widget class="QWidget" name="intensity_layout" native="true">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>20</y>
+      <width>571</width>
+      <height>401</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout"/>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>0</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Intensity</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="phase_layout" native="true">
+    <property name="geometry">
+     <rect>
+      <x>1210</x>
+      <y>20</y>
+      <width>591</width>
+      <height>401</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>1210</x>
+      <y>0</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Phase</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>430</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Metrics</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="metrics_layout" native="true">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>460</y>
+      <width>1191</width>
+      <height>391</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+   </widget>
    <zorder>groupBox</zorder>
    <zorder>run_sim_groupBox</zorder>
    <zorder>rx_groupBox</zorder>
@@ -777,12 +775,6 @@
    <zorder>atmos_scrn_size_slider</zorder>
    <zorder>atmos_scrn_size_label</zorder>
    <zorder>sim_prog_bar</zorder>
-   <zorder>rx_int_dist_frame</zorder>
-   <zorder>phase_screen_frame</zorder>
-   <zorder>rx_int_distr_label</zorder>
-   <zorder>phase_screen_label</zorder>
-   <zorder>perform_metrics_label</zorder>
-   <zorder>perform_metrics_frame</zorder>
    <zorder>rx_ap_diam_input</zorder>
    <zorder>rx_height_input</zorder>
    <zorder>rx_elevation_input</zorder>
@@ -790,13 +782,19 @@
    <zorder>beam_wvl_input</zorder>
    <zorder>beam_waist_input</zorder>
    <zorder>atmos_wind_dir_input_conf</zorder>
+   <zorder>intensity_layout</zorder>
+   <zorder>label</zorder>
+   <zorder>phase_layout</zorder>
+   <zorder>label_2</zorder>
+   <zorder>label_3</zorder>
+   <zorder>metrics_layout</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1122</width>
+     <width>1819</width>
      <height>22</height>
     </rect>
    </property>

@@ -150,10 +150,12 @@ class PY_Configurator(object):
         logger.debug("\nLoad Telescope Params...")
         self.tel.loadParams(self.configDict["Telescope"])
         
+        '''
         for sci in range(self.sim.nSci):
             logger.debug("Load Science {} Params".format(sci))
             self.scis.append(SciConfig(sci))
             self.scis[sci].loadParams(self.configDict["Science"])
+        '''
 
         logger.info("\nLoad Beam Params...")
         self.beam.loadParams(self.configDict["Beam"])
@@ -274,12 +276,13 @@ class PY_Configurator(object):
                 'Receiver': dict(self.rx)
                 }
         
+        '''
         for s_i, s in enumerate(self.scis):
             if s is not None:
                 objs['Science'][s_i] = dict(s)
             else:
                 objs['Science'][s_i] = None
-
+        '''
         for configName, configObj in objs.items():
             yield configName, configObj
 
@@ -290,70 +293,70 @@ class PY_Configurator(object):
     
     #simulation setters
     def set_simSize(self, x):
-        print("Sim size is set to : ", x)
+        logger.info("Sim size is set to : {}".format(x))
         self.simSize = x
     
     def set_gridScale(self, x):
-        print("grid scale is set to : ", x)
+        logger.info("grid scale is set to : {} ".format(x))
         self.tel.telDiam = x
     
     def set_nIters(self, x):
-        print("nIters is set to : ", x)
+        logger.info("nIters is set to : {}".format(x))
         self.sim.nIters = x
     
     def set_loopTime(self, x):
-        print("sampling rate is set to : ", x)
+        logger.info("sampling rate is set to : {} ".format(x))
         self.sim.loopTime = x
 
     #optical beam setters 
     def set_power(self, x):
-        print("optical beam power is set to : ", x)
+        logger.info("optical beam power is set to : {}".format(x))
         self.beam.power = x
     
     def set_wvl(self, x):
-        print("optical wvl is set to : ", x)
+        logger.info("optical wvl is set to : {}".format(x))
         self.beam.wavelength = x
     
     def set_beamWaist(self, x):
-        print("optical beam is set to : ", x)
+        logger.info("optical beam is set to : {}".format(x))
         self.beam.beamWaist = x
     
     def set_propagationDir(self, x):
-        print("Optical propagation dir is set to : ", x)
+        logger.info("Optical propagation dir is set to : {}".format(x))
         self.beam.propagationDir = x
     
     #atmosphere params
     def set_wholeScrnSize(self, x):
-        print("atmos scrn size is set to : ", x)
+        logger.info("atmos scrn size is set to : {}".format(x))
         self.atmos.wholeScrnSize = x
     
     def set_scrnNo(self, x):
-        print("screen number is set to : ", x)
+        logger.info("screen number is set to : {}".format(x))
         self.atmos.scrnNo = x
     
     def set_r0(self, x):
-        print("r0 is set to : ", x)
+        logger.info("r0 is set to : {}".format(x))
         self.atmos.r0 = x
     
     def set_windDirs(self, x):
-        print("Wind direction is set to", x)
+        logger.info("Wind direction is set to : {}".format(x))
         self.windDirs = numpy.repeat(x, int(self.atmos.scrnNo))
     
     def set_windSpeeds(self, x):
-        print("Wind speeds are set to", x)
+        logger.info("Wind speeds are set to {}".format(x))
         self.windSpeeds = numpy.repeat(x, int(self.atmos.scrnNo))
 
     #rx params
     def set_diameter(self, x):
-        print("rx diameter is set to : ", x)
+        logger.info("rx diameter is set to : {} ".format(x))
         self.rx.diameter = x
     
     def set_height(self, x):
-        print("height is set to : ", x)
+        logger.info("height is set to : {} ".format(x))
         self.rx.height = x
     
     def set_elevationAngle(self, x):
-        print("elevation is set to : ", x)
+        logger.info("elevation is set to : {} ".format(x))
         self.rx.elevationAngle = x
     
     '''
@@ -381,7 +384,7 @@ class YAML_Configurator(PY_Configurator):
     def loadSimParams(self):
 
         self.readfile()
-
+        logger.info("FSO-TOOL")
         logger.debug("\nLoad Sim Params...")
         try:
             self.sim.loadParams(self.configDict["Sim"])
@@ -1005,12 +1008,11 @@ class ReceiverConfig(ConfigObj):
         ==================== =================================   ===========
         **Parameter**        **Description**                     **Default**
         -------------------- ---------------------------------   -----------
-        ``elevationAngle``     float:                                0
+        ``elevationAngle``     float:                                90
         ==================== =================================   ===========
 
     """
- 
-
+    
     requiredParams = [  "diameter",
                         "height"
                         ]

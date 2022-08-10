@@ -17,13 +17,11 @@
 #     along with soapy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import sys, os
+import  sys, os, traceback, time, queue, numpy as np
+
 sys.path.append(os.getcwd().replace("GUI",""))
 
-import simulation 
-import logger
-import numpy as np
-import time
+import simulation, logger, pyqtgraph as pg
 
 from PyQt5 import (             QtWidgets,
                                 QtCore)
@@ -44,6 +42,7 @@ from PyQt5.QtWidgets import (   QApplication,
 from PyQt5.QtGui import (       QDoubleValidator,
                                 QValidator)
 
+
 from fso_gui_ui import Ui_MainWindow
 from argparse import ArgumentParser
 
@@ -56,7 +55,9 @@ class GUI(QMainWindow):
 
     def __init__(self, sim = None, verbosity = None):
         QMainWindow.__init__(self)
-            
+        
+        self.useOpenGL = False
+
         self.app = QCoreApplication.instance()
 
         self.ui = Ui_MainWindow()
@@ -80,15 +81,21 @@ class GUI(QMainWindow):
 
         #initialize GUI input fields
         self.init_input_fields()
-        #initialize GUI plots 
-        self.init_plots()
-        
+                
         #verify and validate user input <-- REDO ? NEEDS A SEPARATE THREAD ?
         self.verify_and_set_user_input()
 
         #define other variables
         self.loopRunning = False
         
+        #Init Timer to update plots
+        self.updateTimer = QtCore.QTimer()
+        self.updateTimer.setInterval(100)
+        self.updateTimer.timeout.connect(self.update)
+        #self.ui.updateTimeSpin.valueChanged.connect(self.updateTimeChanged)
+        self.updateQueue = queue.Queue(10)
+        self.updateLock = QtCore.QMutex()
+
         #init variables for sim threads
         self.initThread = None
         self.loopThread = None
@@ -98,6 +105,9 @@ class GUI(QMainWindow):
         self.resultPlot = PlotWidget()
         self.ui.plotLayout.addWidget(self.resultPlot)
         '''
+        
+        #initialize GUI plots 
+        self.init_plots()
 
         #display GUI
         self.show()
@@ -223,44 +233,38 @@ class GUI(QMainWindow):
         
         self.loopThread = LoopThread(self)
         self.loopThread.updateProgressSignal.connect(self.progressUpdate)
-        #self.statsThread.updateStatsSignal.connect(self.updateStats)
+        self.statsThread.updateStatsSignal.connect(self.updateStats)
         self.loopThread.start()
 
-        #self.updateTimer.start()
-        #self.statsThread.start()
+        self.updateTimer.start()
+        self.statsThread.start()
 
 
     def stop(self):
-            
-        self.startTime = time.time()
 
         self.ui.sim_prog_label.setText("Stopping simulation loop...")
+        self.sim.go = False
 
-
-        def stop(self):
-            self.sim.go = False
         try:
             self.loopThread.quit()
         except AttributeError:
             pass
 
-        '''
-        try:
-            self.iMatThread.quit()
-        except AttributeError:
-            pass
         try:
             self.statsThread.quit()
         except AttributeError:
             pass
-        '''
-        #self.updateTimer.stop()
+        self.updateTimer.stop()
 
     def restart(self):
 
-        self.startTime = time.time()
-
+        #self.startTime = time.time()
         self.ui.sim_prog_label.setText("Restarting simulation...")
+        self.sim.reset_loop()
+        self.ui.sim_prog_label.setText("Reset is complete...")
+        #self.update()
+
+
     
     def save(self):
             
@@ -293,7 +297,6 @@ class GUI(QMainWindow):
         self.ui.atmos_scrn_size_slider.setSliderPosition(scrn_size_log2)
         self.ui.atmos_scrn_size_label2.setText(str(self.config.atmos.wholeScrnSize))
         self.ui.atmos_n_scrn_input.insert(str(self.config.atmos.scrnNo))
-        self.ui.atmos_n_scrn_input.insert(str(self.config.atmos.scrnNo))
         self.ui.atmos_wind_speed_input.insert(str(self.config.atmos.windSpeeds)[1:-1])
         self.ui.atmos_wind_dir_input.insert(str(self.config.atmos.windDirs)[1:-1])
         self.ui.atmos_fried_r0_input.insert(str(self.config.atmos.r0))
@@ -302,10 +305,7 @@ class GUI(QMainWindow):
         self.ui.rx_height_input.insert(str(self.config.rx.height))
         self.ui.rx_elevation_input.insert(str(self.config.rx.elevationAngle))
 
-    def init_plots(self):
-
-        pass
-
+    
     def read_param_file(self):
 
         fname = QFileDialog.getOpenFileName(self, 'Open file', '.')
@@ -321,7 +321,12 @@ class GUI(QMainWindow):
 
         self.sim.readParams()
 
+        
+    def updateStats(self, itersPerSec, timeRemaining):
 
+        self.ui.sim_prog_iters_label.setText(
+                                "Iterations Per Second: %.2f"%(itersPerSec))
+        self.ui.sim_prog_time_label.setText( "Time Remaining: %.2fs"%(timeRemaining) )
     #GUI callbacks
 
     def progressUpdate(self, message, i="", maxIter=""):
@@ -336,6 +341,166 @@ class GUI(QMainWindow):
             if i!="":
                 message+=" {}".format(i)
             self.ui.sim_prog_label.setText(message)
+    
+    def updateTimeChanged(self):
+
+        try:
+            self.updateTime = int(numpy.round(1000./float(self.ui.updateTimeSpin.value())))
+            self.updateTimer.setInterval(self.updateTime)
+        except ZeroDivisionError:
+            pass
+
+    def update(self):
+
+        #tell sim that gui wants a plot
+        self.sim.waitingPlot = True
+        #empty queue so only latest update is present
+        plotDict = None
+        self.updateLock.lock()
+        try:
+            while not self.updateQueue.empty():
+                plotDict = self.updateQueue.get_nowait()
+        except:
+            self.updateLock.unlock()
+            traceback.print_exc()
+        self.updateLock.unlock()
+        
+        '''
+        if plotDict:
+
+            # Get the min and max plot scaling
+            scaleValues = self.getPlotScaling(plotDict)
+
+            for wfs in range(self.config.sim.nGS):
+                if numpy.any(plotDict["wfsFocalPlane"][wfs])!=None:
+                    wfsFP = plotDict['wfsFocalPlane'][wfs]
+                    self.wfsPlots[wfs].setImage(wfsFP, lut=self.LUT)
+                    # self.wfsPlots[wfs].getViewBox().setRange(
+                    #         QtCore.QRectF(0, 0, wfsFP.shape[0],
+                    #         wfsFP.shape[1])
+                    #         )
+
+                if numpy.any(plotDict["wfsPhase"][wfs])!=None:
+                    wfsPhase = plotDict["wfsPhase"][wfs]
+                    self.phasePlots[wfs].setImage(
+                            wfsPhase, lut=self.LUT, levels=scaleValues)
+                    self.phasePlots[wfs].getViewBox().setRange(
+                            QtCore.QRectF(0, 0, wfsPhase.shape[0], wfsPhase.shape[1]))
+
+                if numpy.any(plotDict["lgsPsf"][wfs])!=None:
+                    self.lgsPlots[wfs].setImage(
+                        plotDict["lgsPsf"][wfs], lut=self.LUT)
+
+            for dm in range(self.config.sim.nDM):
+                if numpy.any(plotDict["dmShape"][dm]) !=None:
+                    dmShape = plotDict["dmShape"][dm]
+                    self.dmPlots[dm].setImage(plotDict["dmShape"][dm],
+                                            lut=self.LUT, levels=scaleValues)
+
+            for sci in range(self.config.sim.nSci):
+                if numpy.any(plotDict["sciImg"][sci])!=None:
+                    if self.ui.instExpRadio.isChecked():
+                        self.sciPlots[sci].setImage(
+                                plotDict["instSciImg"][sci], lut=self.LUT)
+                    elif self.ui.longExpRadio.isChecked():
+                        self.sciPlots[sci].setImage(
+                                plotDict["sciImg"][sci], lut=self.LUT)
+
+                if numpy.any(plotDict["residual"][sci])!=None:
+                    residual = plotDict["residual"][sci]
+
+                    self.resPlots[sci].setImage(
+                            residual, lut=self.LUT, levels=scaleValues)
+
+            if self.loopRunning:
+                self.updateStrehls()
+
+            self.app.processEvents()
+        '''
+    
+    def getPlotScaling(self, plotDict):
+
+        """
+        Loops through all phase plots to find the required min and max values for plot scaling
+        """
+        plotMins = []
+        plotMaxs = []
+        for wfs in range(self.config.sim.nGS):
+            if numpy.any(plotDict["wfsPhase"])!=None:
+                plotMins.append(plotDict["wfsPhase"][wfs].min())
+                plotMaxs.append(plotDict["wfsPhase"][wfs].max())
+
+        for dm in range(self.config.sim.nDM):
+            if numpy.any(plotDict["dmShape"][dm])!=None:
+                plotMins.append(plotDict["dmShape"][dm].min())
+                plotMaxs.append(plotDict["dmShape"][dm].max())
+
+        for sci in range(self.config.sim.nSci):
+            if numpy.any(plotDict["residual"][sci])!=None:
+                plotMins.append(plotDict["residual"][sci].min())
+                plotMaxs.append(plotDict["residual"][sci].max())
+
+        # Now get the min and max of mins and maxs
+        plotMin = min(plotMins)
+        plotMax = max(plotMaxs)
+
+        return plotMin, plotMax
+
+    def makeImageItem(self, layout, size):
+
+        gv = pg.GraphicsView()
+
+        if self.useOpenGL and GL:
+            gv.useOpenGL()
+        
+        layout.addWidget(gv)
+        vb = pg.ViewBox()
+        vb.setAspectLocked(True)
+        vb.enableAutoRange(axis=pg.ViewBox.XYAxes, enable=True)
+
+        gv.setCentralItem(vb)
+        img = pg.ImageItem(border="w")
+        vb.addItem(img)
+        vb.setRange(QtCore.QRectF(0, 0, size, size))
+        
+        return img
+    
+    def init_plots(self):
+        
+        self.makeImageItem(self.ui.horizontalLayout,30)
+        self.makeImageItem(self.ui.horizontalLayout_2,30)
+        self.makeImageItem(self.ui.horizontalLayout_3,30)
+
+        self.sim.guiQueue = self.updateQueue
+        self.sim.guiLock = self.updateLock
+        self.sim.gui = True
+        self.sim.waitingPlot = False
+        self.ui.sim_prog_bar.setValue(100)
+        self.statsThread = StatsThread(self.sim) 
+        logger.info("Init plots is complete")
+        
+        
+class StatsThread(QtCore.QThread):
+    
+    updateStatsSignal = QtCore.pyqtSignal(float,float)
+    def __init__(self, sim):
+        QtCore.QThread.__init__(self)
+
+        self.sim = sim
+
+    def run(self):
+        self.startTime = time.time()
+
+        while self.sim.iters+1 < self.sim.config.sim.nIters and self.sim.go:
+            time.sleep(0.2)
+            iTime = time.time()
+            # try:
+            #Calculate and print running stats
+            itersPerSec = self.sim.iters / (iTime - self.startTime)
+            if itersPerSec == 0:
+                itersPerSec = 0.00001
+            timeRemaining = (self.sim.config.sim.nIters-self.sim.iters)/itersPerSec
+            self.updateStatsSignal.emit(itersPerSec, timeRemaining)
 
 class InitThread(QtCore.QThread):
 

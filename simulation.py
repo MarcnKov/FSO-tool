@@ -87,23 +87,16 @@ time-stamped directory)::
 '''
 
 # standard python imports
-import datetime
-import os
-import time
-import traceback
+import datetime, time, sys, os, traceback
 from multiprocessing import Process, Queue
-from argparse import ArgumentParser
-import shutil
-import importlib
 import threading
+from argparse import ArgumentParser
+import shutil, importlib
 from matplotlib import pyplot as plt
 import numpy as np
-import sys, os
 
 sys.path.append(os.getcwd())
 
-import confParse
-import numpy
 #Use pyfits or astropy for fits file handling
 try:
     from astropy.io import fits
@@ -113,14 +106,8 @@ except ImportError:
     except ImportError:
         raise ImportError("soapy requires either pyfits or astropy")
 
-import aotools
-import helper_functions as help_func
-
-#sim imports
-import atmosphere, logger, confParse, interp
-import lineofsight
-
-import shutil
+from aotools import circle
+import atmosphere, logger, confParse, lineofsight, interp, helper_functions
 
 #xrange now just "range" in python3.
 #Following code means fastest implementation used in 2 and 3
@@ -239,7 +226,7 @@ class Sim(object):
                                             self.atmos.scrns)
         
         logger.info("Initializing SimHelper object...")
-        self.SimHelper = help_func.SimHelper(self.config)
+        self.SimHelper = helper_functions.SimHelper(self.config)
 
         self.initSaveData()
         
@@ -403,16 +390,17 @@ class Sim(object):
 
 
     def reset_loop(self):
-        """
-        Resets parameters in the system to zero, to restart an AO run wihtout reinitialising
-        """
-        self.iters = 0
-                
-        if self.config.sim.nSci > 0:
-            self.longStrehl[:] = 0
-            self.ee50d[:] = 0
-            for sci in self.sciImgs.values(): sci[:] = 0
         
+        """
+        Resets parameters in the system to zero,
+        to restart an simulation run wihtout reinitialising
+        """
+        
+        self.iters              = 0
+        self.EField[:]          = 0     
+        self.Intensity[:]       = 0         
+        self.RX_Intensity[:]    = 0 
+    
     def finishUp(self):
         
         """
@@ -491,11 +479,11 @@ class Sim(object):
                                                 )
             if self.config.sim.saveRXPower:
                 os.mkdir(self.path+"/RXPower/")
-                self.powerInstRX  = numpy.zeros(self.config.sim.nIters)
+                self.powerInstRX  = np.zeros(self.config.sim.nIters)
 
             if self.config.sim.saveScintillationIndex:
                 os.mkdir(self.path+"/ScintillationIndex/")
-                self.scintInstIdx = numpy.zeros(self.config.sim.nIters)
+                self.scintInstIdx = np.zeros(self.config.sim.nIters)
 
             # Copy the config file to the save directory so you can 
             # remember what the parameters where
@@ -717,10 +705,10 @@ def make_mask(config):
         ndarray: 2-d pupil mask
     """
     if config.tel.mask == "circle":
-        mask = aotools.circle(config.sim.pupilSize / 2.,
+        mask = circle(config.sim.pupilSize / 2.,
                                   config.sim.simSize)
         if config.tel.obsDiam != None:
-            mask -= aotools.circle(
+            mask -= circle(
                 config.tel.obsDiam * config.sim.pxlScale / 2.,
                 config.sim.simSize)
 
@@ -730,20 +718,20 @@ def make_mask(config):
         maskHDUList.close()
         logger.info('load mask "{}", of size: {}'.format(config.tel.mask, mask.shape))
 
-        if not numpy.array_equal(mask.shape, (config.sim.pupilSize,) * 2):
+        if not np.array_equal(mask.shape, (config.sim.pupilSize,) * 2):
             # interpolate mask to pupilSize if not that size already
-            mask = numpy.round(interp.zoom(mask, config.sim.pupilSize))
+            mask = np.round(interp.zoom(mask, config.sim.pupilSize))
 
     else:
         mask = config.tel.mask.copy()
 
     # Check its size is compatible. If its the pupil size, pad to sim size
-    if (not numpy.array_equal(mask.shape, (config.sim.pupilSize,)*2)
-            and not numpy.array_equal(mask.shape, (config.sim.simSize,)*2) ):
+    if (not np.array_equal(mask.shape, (config.sim.pupilSize,)*2)
+            and not np.array_equal(mask.shape, (config.sim.simSize,)*2) ):
         raise ValueError("Mask Shape {} not compatible. Should be either `pupilSize` or `simSize`".format(mask.shape))
 
     if mask.shape != (config.sim.simSize, )*2:
-        mask = numpy.pad(
+        mask = np.pad(
                 mask, config.sim.simPad, mode="constant")
 
     return mask

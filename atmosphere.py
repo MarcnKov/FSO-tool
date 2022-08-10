@@ -113,8 +113,7 @@ class atmos(object):
 
         self.config.normScrnStrengths = self.config.scrnStrengths/(
                             self.config.scrnStrengths[:self.scrnNo].sum())
-        self.config.scrnHeights = self.config.scrnHeights[
-                    :self.config.scrnNo]
+        #self.config.scrnHeights = self.config.scrnHeights[:self.scrnNo]
 
         self.scrnStrengths = ( ((self.r0**(-5./3.))
                                 *self.config.normScrnStrengths)**(-3./5.) )
