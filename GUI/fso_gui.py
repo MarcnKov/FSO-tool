@@ -40,16 +40,50 @@ from PyQt5.QtWidgets import (   QApplication,
                                 QSlider )
 
 from PyQt5.QtGui import (       QDoubleValidator,
-                                QValidator)
+                                QValidator,
+                                QWidget,
+                                QVBoxLayout,
+                                QSizePolicy)
 
 
 from fso_gui_ui import Ui_MainWindow
 from argparse import ArgumentParser
 
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
 VERBOSITY   = 3
 ACCEPTED    = QValidator.Acceptable
 INT_TYPE    = 0
 DBL_TYPE    = -1
+
+
+pg.graphicsItems.GradientEditorItem.Gradients = pg.pgcollections.OrderedDict(
+        [
+    ('viridis', {'ticks': [(0.,  ( 68,   1,  84, 255)),
+                           (0.2, ( 65,  66, 134, 255)),
+                           (0.4, ( 42, 118, 142, 255)),
+                           (0.6, ( 32, 165, 133, 255)),
+                           (0.8, (112, 206,  86, 255)),
+                           (1.0, (241, 229,  28, 255))], 'mode':'rgb'}),
+    ('coolwarm', {'ticks': [(0.0, ( 59,  76, 192)),
+                            (0.5, (220, 220, 220)),
+                            (1.0, (180, 4, 38))], 'mode': 'rgb'}),
+    ('grey', {'ticks': [(0.0, (0, 0, 0, 255)),
+                        (1.0, (255, 255, 255, 255))], 'mode': 'rgb'}),
+    ('magma', {'ticks':[(0., (0, 0, 3, 255)),
+                        (0.25, (80, 18, 123, 255)),
+                        (0.5, (182,  54, 121, 255)),
+                        (0.75, (251, 136,  97, 255)),
+                        (1.0, (251, 252, 191))], 'mode':'rgb'})
+        ])
+
+
+CMAP    =   {'mode': 'rgb','ticks':
+            [   (0., (14, 66, 255, 255)),
+                (0.5, (255, 255, 255, 255)),
+                (1., (255, 26, 26, 255))]
+            }
 
 class GUI(QMainWindow):
 
@@ -87,7 +121,6 @@ class GUI(QMainWindow):
 
         #define other variables
         self.loopRunning = False
-        
         #Init Timer to update plots
         self.updateTimer = QtCore.QTimer()
         self.updateTimer.setInterval(100)
@@ -95,19 +128,21 @@ class GUI(QMainWindow):
         #self.ui.updateTimeSpin.valueChanged.connect(self.updateTimeChanged)
         self.updateQueue = queue.Queue(10)
         self.updateLock = QtCore.QMutex()
-
+        
         #init variables for sim threads
         self.initThread = None
         self.loopThread = None
         self.resultPlot = None
         
-        '''
-        self.resultPlot = PlotWidget()
-        self.ui.plotLayout.addWidget(self.resultPlot)
-        '''
+        #Required for plotting colors
+        self.colorList = ["b","g","r","c","m","y","k"]
+        self.colorNo = 0
+
+        #self.resultPlot = PlotWidget()
+        #self.ui.plotLayout.addWidget(self.resultPlot)
         
         #initialize GUI plots 
-        self.init_plots()
+        #self.init_plots()
 
         #display GUI
         self.show()
@@ -160,7 +195,7 @@ class GUI(QMainWindow):
         
         #wind dirs
         #To implmenet
-
+        
         #Modify receiver logical window input fields
         
         #aperture diameter
@@ -209,6 +244,58 @@ class GUI(QMainWindow):
             input_field.setText('')
 
     
+    def init_metrics_plots(self):
+        
+        if self.resultPlot:
+            self.resultPlot.setParent(None)
+        
+        #init power_rx metrics
+        self.power_result_plot = PlotWidget()
+        self.scint_result_plot = PlotWidget()
+
+        self.ui.power_rx_layout.addWidget(self.power_result_plot)
+        self.power_rx_ax = self.power_result_plot.canvas.ax
+        self.power_rx_ax.set_xlabel("Iterations",fontsize="medium")
+        self.power_rx_ax.set_ylabel("Power (mW)",fontsize="medium")
+        self.power_rx_ax.set_ylim(0, 1.)
+        self.power_rx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
+        self.power_rx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
+
+                
+        #init scintillation_idx metrics
+        self.ui.sci_idx_rx_layout.addWidget(self.scint_result_plot)
+        self.power_rx_ax = self.scint_result_plot.canvas.ax
+        self.power_rx_ax.set_xlabel("Iterations",fontsize="medium")
+        self.power_rx_ax.set_ylabel("Scintillation index ",fontsize="medium")
+        self.power_rx_ax.set_ylim(0, 1.)
+        self.power_rx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
+        self.power_rx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
+
+        self.power_rx_plots =[]
+        self.sci_idx_rx_plots =[]
+
+        self.colorNo+=1
+        if self.colorNo==len(self.colorList):
+            self.colorNo=0
+        
+    def update_metrics_plots(self):
+    
+        '''
+        self.ui.instStrehl.setText( "Instantaneous Strehl: "
+           +self.config.sim.nSci*"%.1f%%  "%tuple(instStrehls))
+
+        for plt in self.strehlPlts:
+            for line in plt:
+                line.remove()
+            del plt
+        '''
+        self.power_rx_plots.append(
+                self.power_rx_ax.plot(self.sim.powerInstRX[self.sim.iters], linestyle =':'))
+            
+        #linestyle=":", color=self.colorList[(self.colorNo+sci) % len(self.colorList)]))
+        self.power_result_plot.canvas.draw()
+    
+
     def init(self):
         
         self.ui.sim_prog_label.setText("Initializing from configuration file")
@@ -224,7 +311,7 @@ class GUI(QMainWindow):
 
     def run(self):
         
-        #self.initStrehlPlot() <-- overwrite
+        self.init_metrics_plots() 
 
         self.startTime = time.time()
 
@@ -263,8 +350,6 @@ class GUI(QMainWindow):
         self.sim.reset_loop()
         self.ui.sim_prog_label.setText("Reset is complete...")
         self.update()
-
-
     
     def save(self):
             
@@ -315,7 +400,7 @@ class GUI(QMainWindow):
             self.sim.readParams(fname)
             self.config = self.sim.config
             logger.info("Configuration file is read...")
-            self.init_plots()
+            #self.init_plots()
 
     def reload_param_file(self):
 
@@ -373,10 +458,8 @@ class GUI(QMainWindow):
             if (np.any(plotDict["Intensity_rx"]) != None):
                 self.intensity_view.setImage(plotDict["Intensity_rx"])
 
-            '''       
             if self.loopRunning:
-                self.updateStrehls()
-            '''
+                self.update_metrics_plots()
             self.app.processEvents()
     
     def getPlotScaling(self, plotDict):
@@ -409,7 +492,7 @@ class GUI(QMainWindow):
 
     def makeImageItem(self, layout, size):
 
-        gv = pg.GraphicsView()
+        gv = pg.GraphicsView( )
 
         if self.useOpenGL and GL:
             gv.useOpenGL()
@@ -428,15 +511,15 @@ class GUI(QMainWindow):
     
     def init_plots(self):
         
-        self.intensity_view = self.makeImageItem(self.ui.intensity_layout,30)
-        '''
-        self.makeImageItem(self.ui.phase_layout,30)
-        self.makeImageItem(self.ui.metrics_layout,30)
-        '''
+        self.intensity_view = self.makeImageItem(self.ui.intensity_layout,self.sim.config.simSize)
+        #self.makeImageItem(self.ui.phase_layout,30)
+        
+        #self.makeImageItem(self.ui.metrics_layout,30)
         self.sim.guiQueue = self.updateQueue
         self.sim.guiLock = self.updateLock
         self.sim.gui = True
         self.sim.waitingPlot = False
+        
         self.ui.sim_prog_bar.setValue(100)
         self.statsThread = StatsThread(self.sim) 
         logger.info("Init plots is complete")
@@ -517,6 +600,26 @@ class LoopThread(QtCore.QThread):
     def progressUpdate(self, message, i="", maxIter=""):
 
         self.updateProgressSignal.emit(str(message), str(i), str(maxIter))
+
+class PlotCanvas(FigureCanvas):
+
+    def __init__(self):
+        self.fig = Figure(facecolor="white", frameon=False)
+        self.ax = self.fig.add_subplot(111)
+
+        FigureCanvas.__init__(self, self.fig)
+        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding,QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+
+class PlotWidget(QWidget):
+
+    def __init__(self, parent = None):
+        QWidget.__init__(self, parent)
+        self.canvas = PlotCanvas()
+        self.vbl = QVBoxLayout()
+        self.vbl.addWidget(self.canvas)
+        self.setLayout(self.vbl)
 
 
 def start_gui(sim, verbosity=3):

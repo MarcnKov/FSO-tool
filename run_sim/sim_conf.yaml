@@ -2,7 +2,7 @@ simName: ASTRO_TEST
 logFile: ASTRO_TEST.log
 pupilSize: 1000
 nSci: 1
-nIters: 1
+nIters: 10
 loopTime: .1 
 verbosity: 3
 simOversize: 1

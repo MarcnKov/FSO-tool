@@ -683,8 +683,8 @@
      <rect>
       <x>610</x>
       <y>20</y>
-      <width>571</width>
-      <height>401</height>
+      <width>531</width>
+      <height>361</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="intensity_layout"/>
@@ -707,8 +707,8 @@
      <rect>
       <x>1210</x>
       <y>20</y>
-      <width>591</width>
-      <height>401</height>
+      <width>551</width>
+      <height>361</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="phase_layout"/>
@@ -730,25 +730,49 @@
     <property name="geometry">
      <rect>
       <x>610</x>
-      <y>430</y>
-      <width>67</width>
+      <y>400</y>
+      <width>151</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Metrics</string>
+     <string>Power at RX plane</string>
     </property>
    </widget>
    <widget class="QWidget" name="widget_3" native="true">
     <property name="geometry">
      <rect>
       <x>610</x>
-      <y>460</y>
-      <width>1191</width>
-      <height>391</height>
+      <y>430</y>
+      <width>531</width>
+      <height>421</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="metrics_layout"/>
+    <layout class="QHBoxLayout" name="power_rx_layout"/>
+   </widget>
+   <widget class="QWidget" name="widget_4" native="true">
+    <property name="geometry">
+     <rect>
+      <x>1210</x>
+      <y>430</y>
+      <width>551</width>
+      <height>421</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="sci_idx_rx_layout"/>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>1210</x>
+      <y>400</y>
+      <width>211</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Scintillation index at RX plane</string>
+    </property>
    </widget>
    <zorder>groupBox</zorder>
    <zorder>run_sim_groupBox</zorder>
@@ -788,6 +812,8 @@
    <zorder>label_2</zorder>
    <zorder>label_3</zorder>
    <zorder>widget_3</zorder>
+   <zorder>widget_4</zorder>
+   <zorder>label_4</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
