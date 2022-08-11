@@ -216,7 +216,7 @@ class GUI(QMainWindow):
         
         self.iThread = InitThread(self)
         self.iThread.updateProgressSignal.connect(self.progressUpdate)
-        #self.iThread.finished.connect(self.initPlots)
+        self.iThread.finished.connect(self.init_plots)
         # self.iThread.finished.connect(self.plotPupilOverlap)
         self.iThread.start()
         self.config = self.sim.config
@@ -258,11 +258,11 @@ class GUI(QMainWindow):
 
     def restart(self):
 
-        #self.startTime = time.time()
+        self.startTime = time.time()
         self.ui.sim_prog_label.setText("Restarting simulation...")
         self.sim.reset_loop()
         self.ui.sim_prog_label.setText("Reset is complete...")
-        #self.update()
+        self.update()
 
 
     
@@ -315,7 +315,7 @@ class GUI(QMainWindow):
             self.sim.readParams(fname)
             self.config = self.sim.config
             logger.info("Configuration file is read...")
-            #self.initPlots()
+            self.init_plots()
 
     def reload_param_file(self):
 
@@ -365,58 +365,20 @@ class GUI(QMainWindow):
             traceback.print_exc()
         self.updateLock.unlock()
         
-        '''
         if plotDict:
 
             # Get the min and max plot scaling
-            scaleValues = self.getPlotScaling(plotDict)
+            #scaleValues = self.getPlotScaling(plotDict)
 
-            for wfs in range(self.config.sim.nGS):
-                if numpy.any(plotDict["wfsFocalPlane"][wfs])!=None:
-                    wfsFP = plotDict['wfsFocalPlane'][wfs]
-                    self.wfsPlots[wfs].setImage(wfsFP, lut=self.LUT)
-                    # self.wfsPlots[wfs].getViewBox().setRange(
-                    #         QtCore.QRectF(0, 0, wfsFP.shape[0],
-                    #         wfsFP.shape[1])
-                    #         )
+            if (np.any(plotDict["Intensity_rx"]) != None):
+                self.intensity_view.setImage(plotDict["Intensity_rx"])
 
-                if numpy.any(plotDict["wfsPhase"][wfs])!=None:
-                    wfsPhase = plotDict["wfsPhase"][wfs]
-                    self.phasePlots[wfs].setImage(
-                            wfsPhase, lut=self.LUT, levels=scaleValues)
-                    self.phasePlots[wfs].getViewBox().setRange(
-                            QtCore.QRectF(0, 0, wfsPhase.shape[0], wfsPhase.shape[1]))
-
-                if numpy.any(plotDict["lgsPsf"][wfs])!=None:
-                    self.lgsPlots[wfs].setImage(
-                        plotDict["lgsPsf"][wfs], lut=self.LUT)
-
-            for dm in range(self.config.sim.nDM):
-                if numpy.any(plotDict["dmShape"][dm]) !=None:
-                    dmShape = plotDict["dmShape"][dm]
-                    self.dmPlots[dm].setImage(plotDict["dmShape"][dm],
-                                            lut=self.LUT, levels=scaleValues)
-
-            for sci in range(self.config.sim.nSci):
-                if numpy.any(plotDict["sciImg"][sci])!=None:
-                    if self.ui.instExpRadio.isChecked():
-                        self.sciPlots[sci].setImage(
-                                plotDict["instSciImg"][sci], lut=self.LUT)
-                    elif self.ui.longExpRadio.isChecked():
-                        self.sciPlots[sci].setImage(
-                                plotDict["sciImg"][sci], lut=self.LUT)
-
-                if numpy.any(plotDict["residual"][sci])!=None:
-                    residual = plotDict["residual"][sci]
-
-                    self.resPlots[sci].setImage(
-                            residual, lut=self.LUT, levels=scaleValues)
-            
+            '''       
             if self.loopRunning:
                 self.updateStrehls()
-
-            self.app.processEvents()
             '''
+            self.app.processEvents()
+    
     def getPlotScaling(self, plotDict):
 
         """
@@ -466,10 +428,11 @@ class GUI(QMainWindow):
     
     def init_plots(self):
         
-        self.makeImageItem(self.ui.intensity_layout,30)
+        self.intensity_view = self.makeImageItem(self.ui.intensity_layout,30)
+        '''
         self.makeImageItem(self.ui.phase_layout,30)
         self.makeImageItem(self.ui.metrics_layout,30)
-
+        '''
         self.sim.guiQueue = self.updateQueue
         self.sim.guiLock = self.updateLock
         self.sim.gui = True

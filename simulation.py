@@ -677,7 +677,6 @@ class Sim(object):
                 power_rx    = {}
                 scint_idx   = {}
                
-                
                 try:
                     intensity_rx = self.Intensity.copy()
                 except AttributeError:
