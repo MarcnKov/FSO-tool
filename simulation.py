@@ -240,6 +240,9 @@ class Sim(object):
         
         self.RX_Intensity  = np.zeros(([    self.config.sim.simSize,
                                             self.config.sim.simSize])) 
+        
+        self.powerInstRX  = np.zeros(self.config.sim.nIters)
+        self.scintInstIdx = np.zeros(self.config.sim.nIters)
 
         # Init performance tracking
         self.iters  = 0
@@ -259,15 +262,7 @@ class Sim(object):
         the science cameras. This can be called
         over and over to form the "loop"
         """
-        #propagate field through the atmosphere
-        t = time.time()
-        self.EField[:] = self.los.frame()
-        self.Tlos += time.time() - t
-        
-        #intro function pointer equivalent ? 
-        self.Intensity[:] = self.SimHelper.calc_intensity(self.EField)
-        self.RX_Intensity[:] = self.SimHelper.calc_RX_intensity()
-        self.calc_inst_metrics()
+        self.compute_metrics()
         self.update_plots()
         
         # Get next phase screens
@@ -283,7 +278,7 @@ class Sim(object):
         
         self.storeData()
         #self.printOutput(self.iters, strehl=True)
-        #self.addToGuiQueue()
+        self.addToGuiQueue()
 
         self.iters += 1
     
@@ -303,12 +298,21 @@ class Sim(object):
         '''
 
 
-    def calc_inst_metrics(self):
+    def compute_metrics(self):
         '''
         Calculates instantenous power at RX and scintillation, 
         for immediate plotting
         '''
-        #append is faster ?
+        logger.info("Compute metrics")
+        #append is faster?
+        #propagate field through the atmosphere
+        t = time.time()
+        self.EField[:] = self.los.frame()
+        self.Tlos += time.time() - t
+        
+        self.Intensity[:] = self.SimHelper.calc_intensity(self.EField)
+        self.RX_Intensity[:] = self.SimHelper.calc_RX_intensity()
+
         self.powerInstRX[self.iters]  = self.SimHelper.calc_RX_power()
         self.scintInstIdx[self.iters] = self.SimHelper.calc_scintillation_idx()
         
@@ -479,11 +483,9 @@ class Sim(object):
                                                 )
             if self.config.sim.saveRXPower:
                 os.mkdir(self.path+"/RXPower/")
-                self.powerInstRX  = np.zeros(self.config.sim.nIters)
 
             if self.config.sim.saveScintillationIndex:
                 os.mkdir(self.path+"/ScintillationIndex/")
-                self.scintInstIdx = np.zeros(self.config.sim.nIters)
 
             # Copy the config file to the save directory so you can 
             # remember what the parameters where
@@ -630,11 +632,14 @@ class Sim(object):
         """
         Prints simulation information  to the console
 
-        Called on each iteration to print information about the current simulation, such as current strehl ratio, to the console. Still under development
+        Called on each iteration to print information
+        about the current simulation, such as current
+        strehl ratio, to the console. Still under development
         Args:
             label(str): Simulation Name
             iter(int): simulation frame number
-            strehl(float, optional): current strehl ration if science cameras are present to record it.
+            strehl(float, optional): current
+            strehl ration if science cameras are present to record it.
         """
         if self.config.sim.simName:
             string = self.config.sim.simName.split("/")[-1]
@@ -666,23 +671,42 @@ class Sim(object):
         if self.guiQueue != None:
             if self.waitingPlot:
                 guiPut = []
+                
+                intensity_rx= {}
+                phase       = {}
+                power_rx    = {}
+                scint_idx   = {}
                
-                sciImg = {}
-                instSciImg = {}
-                for i in xrange(self.config.sim.nSci):
-                    try:
-                        sciImg[i] = self.sciImgs[i].copy()
-                    except AttributeError:
-                        sciImg[i] = None
-                    try:
-                        instSciImg[i] = self.sciCams[i].detector.copy()
-                    except AttributeError:
-                        instSciImg[i] = None
-                    
-                guiPut = {  "wfsFocalPlane":wfsFocalPlane,
-                            "sciImg":       sciImg,
-                            "instSciImg":   instSciImg}
+                
+                try:
+                    intensity_rx = self.Intensity.copy()
+                except AttributeError:
+                    intensity_rx = None
+                    pass
+                
+                try:
+                    phase = None
+                except AttributeError:
+                    phase = None
+                    pass
+                
+                try:
+                    power_rx = self.pwerInstRX.copy() 
+                except AttributeError:
+                    power_rx = None
+                    pass
+                
+                try:
+                    scint_idx = self.scintInstIdx.copy()
+                except AttributeError:
+                    scint_idx = None
+                    pass
 
+                guiPut = {  "Intensity_rx"  :   intensity_rx,
+                            "Phase"         :   phase,
+                            "RXpower"       :   power_rx,
+                            "sciIdx"        :   scint_idx}
+                
                 self.guiLock.lock()
                 try:
                     self.guiQueue.put_nowait(guiPut)

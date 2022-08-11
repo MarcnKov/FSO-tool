@@ -411,13 +411,12 @@ class GUI(QMainWindow):
 
                     self.resPlots[sci].setImage(
                             residual, lut=self.LUT, levels=scaleValues)
-
+            
             if self.loopRunning:
                 self.updateStrehls()
 
             self.app.processEvents()
-        '''
-    
+            '''
     def getPlotScaling(self, plotDict):
 
         """
@@ -467,9 +466,9 @@ class GUI(QMainWindow):
     
     def init_plots(self):
         
-        self.makeImageItem(self.ui.horizontalLayout,30)
-        self.makeImageItem(self.ui.horizontalLayout_2,30)
-        self.makeImageItem(self.ui.horizontalLayout_3,30)
+        self.makeImageItem(self.ui.intensity_layout,30)
+        self.makeImageItem(self.ui.phase_layout,30)
+        self.makeImageItem(self.ui.metrics_layout,30)
 
         self.sim.guiQueue = self.updateQueue
         self.sim.guiLock = self.updateLock

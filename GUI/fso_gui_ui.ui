@@ -678,7 +678,7 @@
      </property>
     </item>
    </widget>
-   <widget class="QWidget" name="intensity_layout" native="true">
+   <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
       <x>610</x>
@@ -687,7 +687,7 @@
       <height>401</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout"/>
+    <layout class="QHBoxLayout" name="intensity_layout"/>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
@@ -702,7 +702,7 @@
      <string>Intensity</string>
     </property>
    </widget>
-   <widget class="QWidget" name="phase_layout" native="true">
+   <widget class="QWidget" name="widget_2" native="true">
     <property name="geometry">
      <rect>
       <x>1210</x>
@@ -711,7 +711,7 @@
       <height>401</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+    <layout class="QHBoxLayout" name="phase_layout"/>
    </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
@@ -739,7 +739,7 @@
      <string>Metrics</string>
     </property>
    </widget>
-   <widget class="QWidget" name="metrics_layout" native="true">
+   <widget class="QWidget" name="widget_3" native="true">
     <property name="geometry">
      <rect>
       <x>610</x>
@@ -748,7 +748,7 @@
       <height>391</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+    <layout class="QHBoxLayout" name="metrics_layout"/>
    </widget>
    <zorder>groupBox</zorder>
    <zorder>run_sim_groupBox</zorder>
@@ -782,12 +782,12 @@
    <zorder>beam_wvl_input</zorder>
    <zorder>beam_waist_input</zorder>
    <zorder>atmos_wind_dir_input_conf</zorder>
-   <zorder>intensity_layout</zorder>
+   <zorder>widget</zorder>
    <zorder>label</zorder>
-   <zorder>phase_layout</zorder>
+   <zorder>widget_2</zorder>
    <zorder>label_2</zorder>
    <zorder>label_3</zorder>
-   <zorder>metrics_layout</zorder>
+   <zorder>widget_3</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
