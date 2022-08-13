@@ -243,6 +243,7 @@ class Sim(object):
         
         self.powerInstRX  = np.zeros(self.config.sim.nIters)
         self.scintInstIdx = np.zeros(self.config.sim.nIters)
+        
 
         # Init performance tracking
         self.iters  = 0
@@ -400,10 +401,14 @@ class Sim(object):
         to restart an simulation run wihtout reinitialising
         """
         
+        #reste data
         self.iters              = 0
-        self.EField[:]          = 0     
-        self.Intensity[:]       = 0         
-        self.RX_Intensity[:]    = 0 
+        self.EField[:]          = 1     
+        self.Intensity[:]       = 1         
+        self.RX_Intensity[:]    = 1
+
+        #reset plots
+        self.reset = True
     
     def finishUp(self):
         
@@ -421,8 +426,8 @@ class Sim(object):
         logger.info("Power at RX: mean {:0.5f} (mW) std {:0.7f} (mW)".format(1e3*np.mean(self.powerInstRX),
                                                         1e3*np.std(self.powerInstRX)))
 
-        logger.info("Scintillation idx at RX: mean {:0.5f}, std {:0.7f}".format(  np.mean(self.powerInstRX),
-                                                                        np.std(self.powerInstRX)))
+        logger.info("Scintillation idx at RX: mean {:0.5f}, std {:0.7f}".format(  np.mean(self.scintInstIdx),
+                                                                        np.std(self.scintInstIdx)))
         logger.info("Time moving atmosphere: {:0.3f} (s)".format(self.Tatmos))
         logger.info("Time propagating Field through the atmoshpere: {:0.3f} (s)".format(self.Tlos))
 
@@ -669,42 +674,28 @@ class Sim(object):
         between the GUI and the simulation
         """
         if self.guiQueue != None:
+            
             if self.waitingPlot:
+                
                 guiPut = []
                 
-                intensity_rx= {}
-                phase       = {}
-                power_rx    = {}
-                scint_idx   = {}
-               
+                self.intensity_rx= {}
+                self.phase       = {}
+                               
                 try:
-                    intensity_rx = self.Intensity.copy()
+                    self.intensity_rx = self.Intensity
                 except AttributeError:
-                    intensity_rx = None
-                    pass
+                    self.intensity_rx = None 
                 
                 try:
-                    phase = None
+                    self.phase = self.atmos.scrns[-1] 
                 except AttributeError:
-                    phase = None
-                    pass
+                    self.phase = None
                 
-                try:
-                    power_rx = self.pwerInstRX.copy() 
-                except AttributeError:
-                    power_rx = None
-                    pass
-                
-                try:
-                    scint_idx = self.scintInstIdx.copy()
-                except AttributeError:
-                    scint_idx = None
-                    pass
-
-                guiPut = {  "Intensity_rx"  :   intensity_rx,
-                            "Phase"         :   phase,
-                            "RXpower"       :   power_rx,
-                            "sciIdx"        :   scint_idx}
+                guiPut =    {
+                                "Intensity_rx"   :  self.intensity_rx,
+                                "Phase"          :  self.phase
+                            }
                 
                 self.guiLock.lock()
                 try:

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1819</width>
-    <height>961</height>
+    <height>922</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -774,30 +774,6 @@
      <string>Scintillation index at RX plane</string>
     </property>
    </widget>
-   <widget class="QScrollArea" name="scrollArea">
-    <property name="geometry">
-     <rect>
-      <x>-1</x>
-      <y>-31</y>
-      <width>1961</width>
-      <height>961</height>
-     </rect>
-    </property>
-    <property name="widgetResizable">
-     <bool>true</bool>
-    </property>
-    <widget class="QWidget" name="scrollAreaWidgetContents">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>1959</width>
-       <height>959</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
-   <zorder>scrollArea</zorder>
    <zorder>groupBox</zorder>
    <zorder>run_sim_groupBox</zorder>
    <zorder>rx_groupBox</zorder>

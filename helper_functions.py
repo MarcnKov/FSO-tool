@@ -42,7 +42,7 @@ class SimHelper():
             return self.Intensity 
 
         else:
-            return None
+            return 0 #to implement other beam types
             
     def calc_RX_intensity(self):
     

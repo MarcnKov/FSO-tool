@@ -56,6 +56,7 @@ VERBOSITY   = 3
 ACCEPTED    = QValidator.Acceptable
 INT_TYPE    = 0
 DBL_TYPE    = -1
+MAX_SCI     = 100000
 
 
 pg.graphicsItems.GradientEditorItem.Gradients = pg.pgcollections.OrderedDict(
@@ -143,11 +144,19 @@ class GUI(QMainWindow):
         
         #initialize GUI plots 
         #self.init_plots()
+        self.init_metrics_plots() 
 
         #display GUI
         self.show()
         self.init()
-     
+    
+    def moveEvent(self, event):
+        """
+        Overwrite PyQt Move event to force a repaint. (Might) fix a bug on some (my) macs
+        """
+        self.repaint()
+        super(GUI, self).moveEvent(event)
+
     def verify_and_set_user_input(self):
         
         #Modify simulation logical window input fields
@@ -246,10 +255,6 @@ class GUI(QMainWindow):
     
     def init_metrics_plots(self):
         
-        if self.resultPlot:
-            self.resultPlot.setParent(None)
-        
-        #init power_rx metrics
         self.power_result_plot = PlotWidget()
         self.scint_result_plot = PlotWidget()
 
@@ -257,44 +262,54 @@ class GUI(QMainWindow):
         self.power_rx_ax = self.power_result_plot.canvas.ax
         self.power_rx_ax.set_xlabel("Iterations",fontsize="medium")
         self.power_rx_ax.set_ylabel("Power (mW)",fontsize="medium")
-        self.power_rx_ax.set_ylim(0, 1.)
+        self.power_rx_ax.set_ylim(0, 2)
+        self.power_rx_ax.set_xlim(0, self.config.sim.nIters)
         self.power_rx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
         self.power_rx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
-
-                
+        
         #init scintillation_idx metrics
         self.ui.sci_idx_rx_layout.addWidget(self.scint_result_plot)
-        self.power_rx_ax = self.scint_result_plot.canvas.ax
-        self.power_rx_ax.set_xlabel("Iterations",fontsize="medium")
-        self.power_rx_ax.set_ylabel("Scintillation index ",fontsize="medium")
-        self.power_rx_ax.set_ylim(0, 1.)
-        self.power_rx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
-        self.power_rx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
-
-        self.power_rx_plots =[]
-        self.sci_idx_rx_plots =[]
-
-        self.colorNo+=1
-        if self.colorNo==len(self.colorList):
-            self.colorNo=0
         
-    def update_metrics_plots(self):
-    
-        '''
-        self.ui.instStrehl.setText( "Instantaneous Strehl: "
-           +self.config.sim.nSci*"%.1f%%  "%tuple(instStrehls))
+        self.sci_idx_ax = self.scint_result_plot.canvas.ax
+        self.sci_idx_ax.set_xlabel("Iterations",fontsize="medium")
+        self.sci_idx_ax.set_ylabel("Scintillation index ",fontsize="medium")
+        self.sci_idx_ax.set_ylim(0, 1)
+        self.sci_idx_ax.set_xlim(0, self.config.sim.nIters)
+        self.sci_idx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
+        self.sci_idx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
 
-        for plt in self.strehlPlts:
-            for line in plt:
-                line.remove()
-            del plt
-        '''
-        self.power_rx_plots.append(
-                self.power_rx_ax.plot(self.sim.powerInstRX[self.sim.iters], linestyle =':'))
+        self.colorNo += 1
+        if (self.colorNo == len(self.colorList)):
+            self.colorNo = 0
+       
             
-        #linestyle=":", color=self.colorList[(self.colorNo+sci) % len(self.colorList)]))
+    def update_metrics_plots(self):
+        
+        self.power_rx_ax.plot(  1e3*self.sim.powerInstRX[0:self.sim.iters],
+                                ls = '-.',
+                                color = self.colorList[(self.colorNo) % len(self.colorList)])
+        self.sci_idx_ax.plot(   (MAX_SCI - self.sim.scintInstIdx[0:self.sim.iters])/MAX_SCI,
+                                ls = '-.',
+                                color = self.colorList[(self.colorNo) % len(self.colorList)])
+       
         self.power_result_plot.canvas.draw()
-    
+        self.scint_result_plot.canvas.draw()
+
+    def clear_metrics(self):
+        
+        try:
+            self.power_rx_ax.clear()
+            self.power_result_plot.canvas.draw()
+        except AttributeError:
+            logger.info("Power metric plot isn't cleared !")
+        
+        try:
+            self.sci_idx_ax.clear()
+            self.scint_result_plot.canvas.draw()
+        except AttributeError:
+            logger.info("Scintillation metric plot isn't cleared !")
+
+        
 
     def init(self):
         
@@ -311,8 +326,7 @@ class GUI(QMainWindow):
 
     def run(self):
         
-        self.init_metrics_plots() 
-
+        
         self.startTime = time.time()
 
         self.ui.sim_prog_label.setText("Running simulation loop...")
@@ -346,10 +360,14 @@ class GUI(QMainWindow):
     def restart(self):
 
         self.startTime = time.time()
-        self.ui.sim_prog_label.setText("Restarting simulation...")
+        #reset sim variables
         self.sim.reset_loop()
+
+        #reset plots
+        self.clear_metrics()
+        self.clear_plots()       
         self.ui.sim_prog_label.setText("Reset is complete...")
-        self.update()
+
     
     def save(self):
             
@@ -457,6 +475,10 @@ class GUI(QMainWindow):
 
             if (np.any(plotDict["Intensity_rx"]) != None):
                 self.intensity_view.setImage(plotDict["Intensity_rx"])
+            
+            if (np.any(plotDict["Phase"]) != None):
+                self.phase_view.setImage(plotDict["Phase"])
+
 
             if self.loopRunning:
                 self.update_metrics_plots()
@@ -492,7 +514,7 @@ class GUI(QMainWindow):
 
     def makeImageItem(self, layout, size):
 
-        gv = pg.GraphicsView( )
+        gv = pg.GraphicsView()
 
         if self.useOpenGL and GL:
             gv.useOpenGL()
@@ -511,10 +533,12 @@ class GUI(QMainWindow):
     
     def init_plots(self):
         
-        self.intensity_view = self.makeImageItem(self.ui.intensity_layout,self.sim.config.simSize)
-        #self.makeImageItem(self.ui.phase_layout,30)
+        self.intensity_view = self.makeImageItem(   self.ui.intensity_layout,
+                                                    self.sim.config.simSize)
+
+        self.phase_view     = self.makeImageItem(   self.ui.phase_layout,
+                                                    self.sim.config.simSize)
         
-        #self.makeImageItem(self.ui.metrics_layout,30)
         self.sim.guiQueue = self.updateQueue
         self.sim.guiLock = self.updateLock
         self.sim.gui = True
@@ -523,7 +547,12 @@ class GUI(QMainWindow):
         self.ui.sim_prog_bar.setValue(100)
         self.statsThread = StatsThread(self.sim) 
         logger.info("Init plots is complete")
-        
+    
+    def clear_plots(self):
+
+        self.intensity_view.clear()
+        self.phase_view.clear()
+
         
 class StatsThread(QtCore.QThread):
     
