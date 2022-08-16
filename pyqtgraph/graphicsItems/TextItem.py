@@ -1,9 +1,11 @@
-import numpy as np
-from ..Qt import QtCore, QtGui
-from ..Point import Point
+from math import atan2, degrees
+
 from .. import functions as fn
+from ..Point import Point
+from ..Qt import QtCore, QtGui, QtWidgets
 from .GraphicsObject import GraphicsObject
 
+__all__ = ['TextItem']
 
 class TextItem(GraphicsObject):
     """
@@ -34,20 +36,21 @@ class TextItem(GraphicsObject):
 
         The effects of the `rotateAxis` and `angle` arguments are added independently. So for example:
 
-        * rotateAxis=None, angle=0 -> normal horizontal text
-        * rotateAxis=None, angle=90 -> normal vertical text
-        * rotateAxis=(1, 0), angle=0 -> text aligned with x axis of its parent
-        * rotateAxis=(0, 1), angle=0 -> text aligned with y axis of its parent
-        * rotateAxis=(1, 0), angle=90 -> text orthogonal to x axis of its parent        
+          * rotateAxis=None, angle=0 -> normal horizontal text
+          * rotateAxis=None, angle=90 -> normal vertical text
+          * rotateAxis=(1, 0), angle=0 -> text aligned with x axis of its parent
+          * rotateAxis=(0, 1), angle=0 -> text aligned with y axis of its parent
+          * rotateAxis=(1, 0), angle=90 -> text orthogonal to x axis of its parent
         """
                      
         self.anchor = Point(anchor)
         self.rotateAxis = None if rotateAxis is None else Point(rotateAxis)
         #self.angle = 0
         GraphicsObject.__init__(self)
-        self.textItem = QtGui.QGraphicsTextItem()
+        self.textItem = QtWidgets.QGraphicsTextItem()
         self.textItem.setParentItem(self)
         self._lastTransform = None
+        self._lastScene = None
         self._bounds = QtCore.QRectF()
         if html is None:
             self.setColor(color)
@@ -66,26 +69,33 @@ class TextItem(GraphicsObject):
         """
         if color is not None:
             self.setColor(color)
-        self.textItem.setPlainText(text)
-        self.updateTextPos()
-        
-    def setPlainText(self, *args):
+        self.setPlainText(text)
+
+    def setPlainText(self, text):
         """
         Set the plain text to be rendered by this item. 
         
-        See QtGui.QGraphicsTextItem.setPlainText().
+        See QtWidgets.QGraphicsTextItem.setPlainText().
         """
-        self.textItem.setPlainText(*args)
-        self.updateTextPos()
+        if text != self.toPlainText():
+            self.textItem.setPlainText(text)
+            self.updateTextPos()
+
+    def toPlainText(self):
+        return self.textItem.toPlainText()
         
-    def setHtml(self, *args):
+    def setHtml(self, html):
         """
         Set the HTML code to be rendered by this item. 
         
-        See QtGui.QGraphicsTextItem.setHtml().
+        See QtWidgets.QGraphicsTextItem.setHtml().
         """
-        self.textItem.setHtml(*args)
-        self.updateTextPos()
+        if self.toHtml() != html:
+            self.textItem.setHtml(html)
+            self.updateTextPos()
+        
+    def toHtml(self):
+        return self.textItem.toHtml()
         
     def setTextWidth(self, *args):
         """
@@ -94,7 +104,7 @@ class TextItem(GraphicsObject):
         If the text requires more space than the width limit, then it will be
         wrapped into multiple lines.
         
-        See QtGui.QGraphicsTextItem.setTextWidth().
+        See QtWidgets.QGraphicsTextItem.setTextWidth().
         """
         self.textItem.setTextWidth(*args)
         self.updateTextPos()
@@ -103,15 +113,22 @@ class TextItem(GraphicsObject):
         """
         Set the font for this text. 
         
-        See QtGui.QGraphicsTextItem.setFont().
+        See QtWidgets.QGraphicsTextItem.setFont().
         """
         self.textItem.setFont(*args)
         self.updateTextPos()
         
     def setAngle(self, angle):
+        """
+        Set the angle of the text in degrees.
+
+        This sets the rotation angle of the text as a whole, measured
+        counter-clockwise from the x axis of the parent. Note that this rotation
+        angle does not depend on horizontal/vertical scaling of the parent.
+        """
         self.angle = angle
-        self.updateTransform()
-        
+        self.updateTransform(force=True)
+
     def setAnchor(self, anchor):
         self.anchor = Point(anchor)
         self.updateTextPos()
@@ -120,7 +137,7 @@ class TextItem(GraphicsObject):
         """
         Set the color for this text.
         
-        See QtGui.QGraphicsItem.setDefaultTextColor().
+        See QtWidgets.QGraphicsItem.setDefaultTextColor().
         """
         self.color = fn.mkColor(color)
         self.textItem.setDefaultTextColor(self.color)
@@ -132,16 +149,10 @@ class TextItem(GraphicsObject):
         br = self.textItem.mapToParent(r.bottomRight())
         offset = (br - tl) * self.anchor
         self.textItem.setPos(-offset)
-        
-        ### Needed to maintain font size when rendering to image with increased resolution
-        #self.textItem.resetTransform()
-        ##self.textItem.rotate(self.angle)
-        #if self._exportOpts is not False and 'resolutionScale' in self._exportOpts:
-            #s = self._exportOpts['resolutionScale']
-            #self.textItem.scale(s, s)
+
         
     def boundingRect(self):
-        return self.textItem.mapToParent(self.textItem.boundingRect()).boundingRect()
+        return self.textItem.mapRectToParent(self.textItem.boundingRect())
 
     def viewTransformChanged(self):
         # called whenever view transform has changed.
@@ -149,17 +160,34 @@ class TextItem(GraphicsObject):
         self.updateTransform()
         
     def paint(self, p, *args):
-        # this is not ideal because it causes another update to be scheduled.
+        # this is not ideal because it requires the transform to be updated at every draw.
         # ideally, we would have a sceneTransformChanged event to react to..
-        self.updateTransform()
+        s = self.scene()
+        ls = self._lastScene
+        if s is not ls:
+            if ls is not None:
+                ls.sigPrepareForPaint.disconnect(self.updateTransform)
+            self._lastScene = s
+            if s is not None:
+                s.sigPrepareForPaint.connect(self.updateTransform)
+            self.updateTransform()
+            p.setTransform(self.sceneTransform())
         
-        if self.border.style() != QtCore.Qt.NoPen or self.fill.style() != QtCore.Qt.NoBrush:
+        if self.border.style() != QtCore.Qt.PenStyle.NoPen or self.fill.style() != QtCore.Qt.BrushStyle.NoBrush:
             p.setPen(self.border)
             p.setBrush(self.fill)
-            p.setRenderHint(p.Antialiasing, True)
+            p.setRenderHint(p.RenderHint.Antialiasing, True)
             p.drawPolygon(self.textItem.mapToParent(self.textItem.boundingRect()))
         
-    def updateTransform(self):
+    def setVisible(self, v):
+        GraphicsObject.setVisible(self, v)
+        if v:
+            self.updateTransform()
+    
+    def updateTransform(self, force=False):
+        if not self.isVisible():
+            return
+
         # update transform such that this item has the correct orientation
         # and scaling relative to the scene, but inherits its position from its
         # parent.
@@ -171,7 +199,7 @@ class TextItem(GraphicsObject):
         else:
             pt = p.sceneTransform()
         
-        if pt == self._lastTransform:
+        if not force and pt == self._lastTransform:
             return
 
         t = pt.inverted()[0]
@@ -182,14 +210,9 @@ class TextItem(GraphicsObject):
         angle = -self.angle
         if self.rotateAxis is not None:
             d = pt.map(self.rotateAxis) - pt.map(Point(0, 0))
-            a = np.arctan2(d.y(), d.x()) * 180 / np.pi
+            a = degrees(atan2(d.y(), d.x()))
             angle += a
-        t.rotate(angle)
-        
+        t.rotate(angle)  
         self.setTransform(t)
-        
         self._lastTransform = pt
-        
         self.updateTextPos()
-
-        

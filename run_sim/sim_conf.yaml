@@ -30,7 +30,7 @@ Beam:
 
 Receiver:
     diameter: 250.0e-3
-    height: 700000
+    height: 700000 
     elevationAngle: 90
 
 Science:
@@ -40,6 +40,6 @@ Science:
     FOV: 1.0
     wavelength: 1.55e-6
     propagationMode: Physical
-    propagationDir: up
+    propagationDir: down
     pxls: 64
     height: 700000

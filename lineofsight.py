@@ -301,6 +301,8 @@ class LineOfSight(object):
         
         self.EField *= self.mask 
         
+        phs2Rad = 2 * np.pi / self.wvl
+
         z_total  = 0 
         ht       = 0                 
         ht_final = self.source_altitude  
@@ -313,7 +315,7 @@ class LineOfSight(object):
             if (self.prop_dir == "up"):
                 z = abs(self.layer_altitudes[0] - ht)
             else:
-                z = abs(ht_final - layer_altitudes[0])
+                z = abs(ht_final - self.layer_altitudes[0])
             
             if (self.beam_type == 'gaussian'):
                 self.EField = self.SimHelper.gaussian_beam_ext(self.r_sq, z)
@@ -328,15 +330,10 @@ class LineOfSight(object):
         #Propagate electrical field via phase screens
         for i in range(0, self.n_layers):
             
-            '''
-            logger.debug(   "Propagating {:d} screen out of {:d}"
-                            .format(i+1, self.n_layers))
-            '''
-
             phase = self.phase_screens[i]
              
             # Convert phase to radians
-            phase *= 2*np.pi/self.wvl 
+            phase *= phs2Rad
         
             # Change sign if propagating up
             if (self.prop_dir == 'up'):

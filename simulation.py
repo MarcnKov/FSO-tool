@@ -264,8 +264,7 @@ class Sim(object):
         over and over to form the "loop"
         """
         self.compute_metrics()
-        self.update_plots()
-        
+        #self.update_plots() 
         # Get next phase screens
         t = time.time()
         self.atmos.moveScrns()
@@ -298,8 +297,8 @@ class Sim(object):
                                         self.iters)
         '''
 
-
     def compute_metrics(self):
+
         '''
         Calculates instantenous power at RX and scintillation, 
         for immediate plotting
@@ -322,6 +321,7 @@ class Sim(object):
                 self.summedIntensity += self.RX_Intensity
 
     def aoloop(self):
+
         """
         Main AO Loop
 

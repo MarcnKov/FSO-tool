@@ -117,9 +117,7 @@ class atmos(object):
 
         self.scrnStrengths = ( ((self.r0**(-5./3.))
                                 *self.config.normScrnStrengths)**(-3./5.) )
-        # #Assume r0 calculated for 550nm.
-        # self.wvl = 550e-9
-
+        
         # Computes tau0, the AO time constant (Roddier 1981), at current wind speed
         vBar53 = (self.windSpeeds[:self.scrnNo]**(5./3.) * self.config.normScrnStrengths[:self.scrnNo]).sum() ** (3./5.)
         tau0 = 0.314 * self.r0 / vBar53
@@ -140,7 +138,6 @@ class atmos(object):
         scrnSize = int(round(self.scrn_size))
 
         ## Print turbulence summary
-        logger.info("Turbulence summary @ 500 nm:")
         logger.info('| r0 = {0:.2f} m ({1:.2f}" seeing)'.format(self.r0, numpy.degrees(0.5e-6/self.r0)*3600.0))
         logger.info("| Vbar_5/3 = {0:.2f} m/s".format(vBar53))
         logger.info("| tau0 = {0:.2f} ms".format(tau0*1e3))
@@ -151,7 +148,7 @@ class atmos(object):
 
         # The whole screens will be kept at this value, and then scaled to the
         # correct r0 before being sent to the simulation
-        self.wholeScrnR0 = 1.
+        self.wholeScrnR0 = 1. #self.r0
 
         # If required, generate some new Kolmogorov phase screens
         if self.config.infinite:
@@ -168,7 +165,7 @@ class atmos(object):
             if not self.config.scrnNames:
                 logger.info("Generating Phase Screens")
                 for i in xrange(self.scrnNo):
-                    logger.info("Generate Finite Phase Screen {0}  with r0: {1:.2f}, size: {2}".format(i,self.scrnStrengths[i], self.wholeScrnSize))
+                    #logger.info("Generate Finite Phase Screen {0}  with r0: {1:.2f}, size: {2}".format(i,self.scrnStrengths[i], self.wholeScrnSize))
                     if self.config.subHarmonics:
                         self.wholeScrns[i] = phasescreen.ft_sh_phase_screen(
                                 self.wholeScrnR0,
@@ -181,7 +178,8 @@ class atmos(object):
                                 self.config.L0[i], 0.01)
 
                     self.scrns[i] = self.wholeScrns[i][:scrnSize,:scrnSize]
-                    logger.info("Finite Phase Screen Size {}".format(numpy.shape(self.scrns[i])))
+                    #logger.info("Finite Phase Screen Size {}".format(numpy.shape(self.scrns[i])))
+                logger.info("Phase Screens generation is finished!")
 
             # Otherwise, load some others from FITS file
             else:
@@ -215,14 +213,8 @@ class atmos(object):
 
                 self.wholeScrnSize = self.wholeScrns[i].shape[0]
                 if self.wholeScrnSize < self.scrn_size:
-                    raise Exception("required scrn size larger than phase screen")
+                    raise Exception("Required scrn size is larger than the phase screen.")
             
-            
-            # However we made the phase screen, turn it into meters for ease of
-            # use
-    #        for s in range(self.scrnNo):
-    #            self.wholeScrns[s] *= (500e-9/(2*numpy.pi))
-    #
             # Set the initial starting point of the screen,
             # If windspeed is negative, starts from the
             # far-end of the screen to avoid rolling straight away
@@ -374,8 +366,6 @@ class atmos(object):
                         *self.config.normScrnStrengths)**(-3./5.))
             # Finally, scale for r0 and turn to nm
             self.scrns[i] *= (self.scrnStrengths[i]/self.wholeScrnR0)**(-5./6.)
-            #self.scrns[i] *= (500/(2*numpy.pi))
-
         return self.scrns
 
     def randomScrns(self, subHarmonics=False, l0=0.01):

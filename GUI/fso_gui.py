@@ -17,7 +17,9 @@
 #     along with soapy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import  sys, os, traceback, time, queue, numpy as np
+import  sys, os, traceback, time, queue, numpy as np, matplotlib, matplotlib.pyplot as plt
+
+matplotlib.use('Qt5Agg')
 
 sys.path.append(os.getcwd().replace("GUI",""))
 
@@ -37,20 +39,20 @@ from PyQt5.QtWidgets import (   QApplication,
                                 QMainWindow,
                                 QFileDialog,
                                 QLineEdit,
-                                QSlider )
-
-from PyQt5.QtGui import (       QDoubleValidator,
-                                QValidator,
+                                QSlider,
                                 QWidget,
                                 QVBoxLayout,
                                 QSizePolicy)
 
-
+from PyQt5.QtGui import (       QDoubleValidator,
+                                QValidator)  
+                                              
+from matplotlib.backends.backend_qt5agg import (    FigureCanvasQTAgg,
+                                                    NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.figure import Figure
 from fso_gui_ui import Ui_MainWindow
 from argparse import ArgumentParser
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 
 VERBOSITY   = 3
 ACCEPTED    = QValidator.Acceptable
@@ -59,31 +61,11 @@ DBL_TYPE    = -1
 MAX_SCI     = 100000
 
 
-pg.graphicsItems.GradientEditorItem.Gradients = pg.pgcollections.OrderedDict(
-        [
-    ('viridis', {'ticks': [(0.,  ( 68,   1,  84, 255)),
-                           (0.2, ( 65,  66, 134, 255)),
-                           (0.4, ( 42, 118, 142, 255)),
-                           (0.6, ( 32, 165, 133, 255)),
-                           (0.8, (112, 206,  86, 255)),
-                           (1.0, (241, 229,  28, 255))], 'mode':'rgb'}),
-    ('coolwarm', {'ticks': [(0.0, ( 59,  76, 192)),
-                            (0.5, (220, 220, 220)),
-                            (1.0, (180, 4, 38))], 'mode': 'rgb'}),
-    ('grey', {'ticks': [(0.0, (0, 0, 0, 255)),
-                        (1.0, (255, 255, 255, 255))], 'mode': 'rgb'}),
-    ('magma', {'ticks':[(0., (0, 0, 3, 255)),
-                        (0.25, (80, 18, 123, 255)),
-                        (0.5, (182,  54, 121, 255)),
-                        (0.75, (251, 136,  97, 255)),
-                        (1.0, (251, 252, 191))], 'mode':'rgb'})
-        ])
-
-
-CMAP    =   {'mode': 'rgb','ticks':
-            [   (0., (14, 66, 255, 255)),
-                (0.5, (255, 255, 255, 255)),
-                (1., (255, 26, 26, 255))]
+CMAP    =   {   'mode': 'rgb',
+                'ticks':[   (0., (14, 66, 255, 255)),
+                            (0.5, (255, 255, 255, 255)),
+                            (1., (255, 26, 26, 255))
+                        ]
             }
 
 class GUI(QMainWindow):
@@ -109,6 +91,12 @@ class GUI(QMainWindow):
         self.ui.load_params_action.triggered.connect(self.read_param_file)
         self.ui.reload_params_action.triggered.connect(self.reload_param_file)
         
+        #Initialise Colour chooser
+        self.gradient = pg.GradientWidget(orientation="bottom")
+        self.gradient.sigGradientChanged.connect(self.changeLUT)
+        #self.ui.verticalLayout.addWidget(self.gradient)
+        self.gradient.restoreState(CMAP)
+
         #initialize variables
         self.sim = sim
         self.config = self.sim.config
@@ -204,7 +192,10 @@ class GUI(QMainWindow):
         
         #wind dirs
         #To implmenet
-        
+
+        #screen height
+        #To implement
+
         #Modify receiver logical window input fields
         
         #aperture diameter
@@ -309,7 +300,6 @@ class GUI(QMainWindow):
         except AttributeError:
             logger.info("Scintillation metric plot isn't cleared !")
 
-        
 
     def init(self):
         
@@ -325,7 +315,6 @@ class GUI(QMainWindow):
         
 
     def run(self):
-        
         
         self.startTime = time.time()
 
@@ -452,7 +441,7 @@ class GUI(QMainWindow):
             self.updateTimer.setInterval(self.updateTime)
         except ZeroDivisionError:
             pass
-
+    
     def update(self):
 
         #tell sim that gui wants a plot
@@ -470,75 +459,66 @@ class GUI(QMainWindow):
         
         if plotDict:
 
-            # Get the min and max plot scaling
-            #scaleValues = self.getPlotScaling(plotDict)
-
             if (np.any(plotDict["Intensity_rx"]) != None):
-                self.intensity_view.setImage(plotDict["Intensity_rx"])
+                
+                self.intensity_canvas.axes.cla()
+
+                L = self.config.tel.telDiam
+                extent = -L/2, L/2, -L/2, L/2
+                img = self.intensity_canvas.axes.imshow(plotDict["Intensity_rx"],
+                                                        alpha =.9,
+                                                        extent=extent)
+                
+                
+                self.intensity_canvas.axes.set_title(
+                                                    self.config.beam.propagationDir     +
+                                                    'link gaussian beam intensity at '  +
+                                                    str(self.config.rx.height//1000) +  
+                                                    ' (km)', fontsize = 8)
+
+                self.intensity_canvas.axes.set_xlabel(r'$x_n/2$' + ' (m)', fontsize = 5)
+                self.intensity_canvas.axes.set_ylabel(r'$y_n/2$' + ' (m)', fontsize = 5)
+                self.intensity_canvas.axes.tick_params(axis = 'x', labelsize = 5)
+                self.intensity_canvas.axes.tick_params(axis = 'y', labelsize = 5)
+                
+                #plots colorbar only for the last iteration
+                #fix: redraw it for each iteration 
+                if (self.sim.iters == self.config.sim.nIters-1):
+                    c_bar = plt.colorbar(img, ax = self.intensity_canvas.axes)
+                    c_bar.ax.set_xlabel(r'$W/m^2$')
+                    c_bar.ax.set_ylabel(r'Intensity')
+                self.intensity_canvas.draw()
             
             if (np.any(plotDict["Phase"]) != None):
-                self.phase_view.setImage(plotDict["Phase"])
+                self.phase_canvas.axes.cla()
+                self.phase_canvas.axes.imshow(plotDict["Phase"])
+                
+                self.phase_canvas.axes.tick_params(axis = 'x', labelsize = 5)
+                self.phase_canvas.axes.tick_params(axis = 'y', labelsize = 5)
+                
+                self.phase_canvas.draw()
 
 
             if self.loopRunning:
                 self.update_metrics_plots()
             self.app.processEvents()
-    
-    def getPlotScaling(self, plotDict):
-
-        """
-        Loops through all phase plots to find the required min and max values for plot scaling
-        """
-        plotMins = []
-        plotMaxs = []
-        for wfs in range(self.config.sim.nGS):
-            if numpy.any(plotDict["wfsPhase"])!=None:
-                plotMins.append(plotDict["wfsPhase"][wfs].min())
-                plotMaxs.append(plotDict["wfsPhase"][wfs].max())
-
-        for dm in range(self.config.sim.nDM):
-            if numpy.any(plotDict["dmShape"][dm])!=None:
-                plotMins.append(plotDict["dmShape"][dm].min())
-                plotMaxs.append(plotDict["dmShape"][dm].max())
-
-        for sci in range(self.config.sim.nSci):
-            if numpy.any(plotDict["residual"][sci])!=None:
-                plotMins.append(plotDict["residual"][sci].min())
-                plotMaxs.append(plotDict["residual"][sci].max())
-
-        # Now get the min and max of mins and maxs
-        plotMin = min(plotMins)
-        plotMax = max(plotMaxs)
-
-        return plotMin, plotMax
-
-    def makeImageItem(self, layout, size):
-
-        gv = pg.GraphicsView()
-
-        if self.useOpenGL and GL:
-            gv.useOpenGL()
         
-        layout.addWidget(gv)
-        vb = pg.ViewBox()
-        vb.setAspectLocked(True)
-        vb.enableAutoRange(axis=pg.ViewBox.XYAxes, enable=True)
-
-        gv.setCentralItem(vb)
-        img = pg.ImageItem(border="w")
-        vb.addItem(img)
-        vb.setRange(QtCore.QRectF(0, 0, size, size))
+    def make_figure_item(self, layout):
         
-        return img
-    
+        canvas  = MplCanvas(self, width=5, height=5, dpi=130)
+        toolbar = NavigationToolbar(canvas, self)
+        
+        layout.addWidget(toolbar)
+        layout.addWidget(canvas)
+        self.show() 
+        
+        return canvas
+
     def init_plots(self):
         
-        self.intensity_view = self.makeImageItem(   self.ui.intensity_layout,
-                                                    self.sim.config.simSize)
+        self.intensity_canvas   = self.make_figure_item(self.ui.intensity_layout)
+        self.phase_canvas       = self.make_figure_item(self.ui.phase_layout)
 
-        self.phase_view     = self.makeImageItem(   self.ui.phase_layout,
-                                                    self.sim.config.simSize)
-        
         self.sim.guiQueue = self.updateQueue
         self.sim.guiLock = self.updateLock
         self.sim.gui = True
@@ -550,10 +530,12 @@ class GUI(QMainWindow):
     
     def clear_plots(self):
 
-        self.intensity_view.clear()
-        self.phase_view.clear()
+        self.intensity_canvas.axes.cla()
+        self.phase_canvas.axes.cla()
 
-        
+    def changeLUT(self):
+        self.LUT = self.gradient.getLookupTable(256)
+
 class StatsThread(QtCore.QThread):
     
     updateStatsSignal = QtCore.pyqtSignal(float,float)
@@ -630,15 +612,23 @@ class LoopThread(QtCore.QThread):
 
         self.updateProgressSignal.emit(str(message), str(i), str(maxIter))
 
-class PlotCanvas(FigureCanvas):
+
+class MplCanvas(FigureCanvasQTAgg):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
+
+class PlotCanvas(FigureCanvasQTAgg):
 
     def __init__(self):
         self.fig = Figure(facecolor="white", frameon=False)
         self.ax = self.fig.add_subplot(111)
 
-        FigureCanvas.__init__(self, self.fig)
-        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding,QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
+        FigureCanvasQTAgg.__init__(self, self.fig)
+        FigureCanvasQTAgg.setSizePolicy(self, QSizePolicy.Expanding,QSizePolicy.Expanding)
+        FigureCanvasQTAgg.updateGeometry(self)
 
 
 class PlotWidget(QWidget):
