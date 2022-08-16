@@ -53,9 +53,8 @@ class SimHelper():
             float : RX Intensity at aperture
         """
 
-        aperture = circle(ceil(self.n_rx_pxls/2), self.N).astype(bool)
-        
-        return np.where(aperture,self.Intensity, 0)
+        self.aperture = circle(ceil(self.n_rx_pxls/2), self.N).astype(bool)
+        return np.where(self.aperture,self.Intensity, 0)
     
     def calc_RX_power(self):
     
@@ -75,8 +74,12 @@ class SimHelper():
         Returns:
             float : scintillation index 
         """
-        I_aperture = self.calc_RX_intensity()
-        return np.var(I_aperture)/np.mean(I_aperture)**2
+        I_aperture  = self.calc_RX_intensity()
+        
+        variance    = np.var(I_aperture,    where = self.aperture)
+        mean        = np.mean(I_aperture,   where = self.aperture)
+
+        return variance/mean**2
 
     def gaussian_beam_ext(self, r_sq, z, flag = False):
     

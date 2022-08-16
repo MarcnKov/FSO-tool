@@ -58,8 +58,6 @@ VERBOSITY   = 3
 ACCEPTED    = QValidator.Acceptable
 INT_TYPE    = 0
 DBL_TYPE    = -1
-MAX_SCI     = 100000
-
 
 CMAP    =   {   'mode': 'rgb',
                 'ticks':[   (0., (14, 66, 255, 255)),
@@ -251,7 +249,7 @@ class GUI(QMainWindow):
 
         self.ui.power_rx_layout.addWidget(self.power_result_plot)
         self.power_rx_ax = self.power_result_plot.canvas.ax
-        self.power_rx_ax.set_xlabel("Iterations",fontsize="medium")
+        self.power_rx_ax.set_xlabel("Iterations x Δt  ",fontsize="medium")
         self.power_rx_ax.set_ylabel("Power (mW)",fontsize="medium")
         self.power_rx_ax.set_ylim(0, 2)
         self.power_rx_ax.set_xlim(0, self.config.sim.nIters)
@@ -262,9 +260,9 @@ class GUI(QMainWindow):
         self.ui.sci_idx_rx_layout.addWidget(self.scint_result_plot)
         
         self.sci_idx_ax = self.scint_result_plot.canvas.ax
-        self.sci_idx_ax.set_xlabel("Iterations",fontsize="medium")
+        self.sci_idx_ax.set_xlabel("Iterations x Δt",fontsize="medium")
         self.sci_idx_ax.set_ylabel("Scintillation index ",fontsize="medium")
-        self.sci_idx_ax.set_ylim(0, 1)
+        self.sci_idx_ax.set_ylim(0, 0.3)
         self.sci_idx_ax.set_xlim(0, self.config.sim.nIters)
         self.sci_idx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
         self.sci_idx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
@@ -279,7 +277,7 @@ class GUI(QMainWindow):
         self.power_rx_ax.plot(  1e3*self.sim.powerInstRX[0:self.sim.iters],
                                 ls = '-.',
                                 color = self.colorList[(self.colorNo) % len(self.colorList)])
-        self.sci_idx_ax.plot(   (MAX_SCI - self.sim.scintInstIdx[0:self.sim.iters])/MAX_SCI,
+        self.sci_idx_ax.plot(    self.sim.scintInstIdx[0:self.sim.iters],
                                 ls = '-.',
                                 color = self.colorList[(self.colorNo) % len(self.colorList)])
        
