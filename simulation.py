@@ -127,7 +127,7 @@ class Sim(object):
     with initialising all component objects,
     making reconstructor control matrices,
     running the loop and saving data after
-    the loop has run.
+    the oop has run.
 
     Can be sub-classed and the 'aoloop' method
     overwritten for different loops to be used
@@ -146,7 +146,41 @@ class Sim(object):
         self.guiQueue = None
         self.go = False
         self._sim_running = False
+    
+    def ft2_ft(self, g, delta):
+        
+        fft_shift   = np.fft.fftshift
+        fft2        = np.fft.fft2
 
+        return fft_shift(fft2(fft_shift(g)))*delta**2
+
+    def ift2_ft(self, G, delta_f):
+        
+        N = np.shape(G)[0]
+
+        ifft_shift   = np.fft.ifftshift
+        ifft2       = np.fft.ifft2
+        
+        return ifft_shift(ifft2(ifft_shift(G)))*(N*delta_f)**2
+
+    def corr2_ft(self,u1, u2, mask, delta):
+
+        N = np.shape(u1)[0]
+        delta_f = 1/(N*delta)
+
+        U1 = self.ft2_ft(u1*mask, delta)
+        U2 = self.ft2_ft(u2*mask, delta)
+        
+        U12corr = self.ift2_ft(np.conj(U1)*U2, delta_f)
+        
+        maskcorr = self.ift2_ft(np.abs(self.ft2_ft(mask,delta))**2, delta_f)*delta**2
+        idx      = maskcorr.astype(bool)
+    
+        U12corr     = np.where(idx, U12corr, 0)
+        maskcorr    = np.where(idx, maskcorr, 0)
+        mask        = np.where(idx, mask,0)
+
+        return (U12corr/maskcorr)*mask
 
     def readParams(self, configFile=None):
         """
@@ -188,8 +222,8 @@ class Sim(object):
         """
         logger.setLoggingLevel(level)
 
-
-    def aoinit(self):
+    #DELETE R0 FUNCTION ARGUMENT --> FOR SIMULATION VALIDATION PURPOSES
+    def aoinit(self, r0 = 0.01, init_atmos = True):
         '''
         Initialises all simulation objects.
 
@@ -204,22 +238,29 @@ class Sim(object):
             self.config.sim.pupilSize
         except:
             self.readParams()
-
+  
         logger.setLoggingLevel(self.config.sim.verbosity)
         logger.setLoggingFile(self.config.sim.logfile)
         logger.info("Starting Sim: {}".format(self.getTimeStamp()))
 
         # Calculate some params from read ones
         self.config.calcParams()
-
         # Init Pupil Mask <-- TO INITIALIZE
         '''
         logger.info("Creating mask...")
         self.mask = make_mask(self.config)
         '''
+        #DELETE : FOR SIMULATION VERIFICATION        
         
-        logger.info("Initializing atmosphere object...")
-        self.atmos = atmosphere.atmos(self.config)
+        self.MCDOC2 = 0
+        self.EMEAN  = 0
+        self.sciIdx = 0
+        #self.config.set_r0(r0)
+        #self.config.set_height(r0) 
+        
+        if (init_atmos == True):
+            logger.info("Initializing atmosphere object...")
+            self.atmos = atmosphere.atmos(self.config)
         
         logger.info("Initializing line of sight object...")
         self.los = lineofsight.LineOfSight( self.config,
@@ -234,26 +275,28 @@ class Sim(object):
         self.EField     = np.zeros(([   self.config.sim.simSize,
                                         self.config.sim.simSize]),
                                         dtype=complex)
-
+        
+        #UNCOMMENT
         self.Intensity  = np.zeros(([   self.config.sim.simSize,
                                         self.config.sim.simSize])) 
         
         self.RX_Intensity  = np.zeros(([    self.config.sim.simSize,
                                             self.config.sim.simSize])) 
-        
         self.powerInstRX  = np.zeros(self.config.sim.nIters)
         self.scintInstIdx = np.zeros(self.config.sim.nIters)
         
-
         # Init performance tracking
+
         self.iters  = 0
-        
+        self.MCF2   = 0 #sim validation
+
         self.Tlos   = 0
         self.Tatmos = 0
         self.Tsim   = 0
+        
+        logger.info("Initialisation Complete. Press START !")
+        
 
-        logger.info("Initialisation Complete!")
-    
     def loopFrame(self):
         """
         Runs a single from of the entire AO system.
@@ -264,10 +307,18 @@ class Sim(object):
         over and over to form the "loop"
         """
         self.compute_metrics()
-        #self.update_plots() 
+        #self.update_plots()
+        
+        #self.validate()
         # Get next phase screens
         t = time.time()
-        self.atmos.moveScrns()
+        
+        if (self.config.sim.simType == 'dynamic'):
+            self.atmos.moveScrns()
+        else:
+            self.atmos.randomScrns()
+
+        #Commented for validation purposes
         self.Tatmos += time.time()-t
 
         # Run Loop...
@@ -276,12 +327,21 @@ class Sim(object):
         # If sim is run continuously in loop,
         #overwrite oldest data in buffer
         
-        self.storeData()
+        #self.storeData()
         #self.printOutput(self.iters, strehl=True)
+        
         self.addToGuiQueue()
-
+        
         self.iters += 1
     
+    def validate(self):
+        
+        self.MCF2 += self.corr2_ft( self.EField,
+                                    self.EField,
+                                    self.los.mask,
+                                    self.los.in_pxl_scale)
+        
+        #self.MCF2 += np.conj(self.EField) @ self.EField 
     def update_plots(self):
         '''
         If plot output is specified, plot instantanous metrics,
@@ -290,12 +350,7 @@ class Sim(object):
         
         if (self.config.sim.plotMetrics):
             pass
-        '''
-        self.SimHelper.plot_intensity(  self.config.rx.height,
-                                        self.config.tel.telDiam,
-                                        self.config.beam.propagationDir,
-                                        self.iters)
-        '''
+        self.SimHelper.plot_intensity(0) 
 
     def compute_metrics(self):
 
@@ -309,17 +364,19 @@ class Sim(object):
         t = time.time()
         self.EField[:] = self.los.frame()
         self.Tlos += time.time() - t
-        
+       
+       #UNCOMMENT : COMMENTED FOR VALIDATION PURPOSES
         self.Intensity[:] = self.SimHelper.calc_intensity(self.EField)
         self.RX_Intensity[:] = self.SimHelper.calc_RX_intensity()
-
         self.powerInstRX[self.iters]  = self.SimHelper.calc_RX_power()
         self.scintInstIdx[self.iters] = self.SimHelper.calc_scintillation_idx()
-        
+        #self.sciIdx += self.SimHelper.calc_scintillation_idx()
+
+
         #to normalize --> Interested in frequency variations
         if self.config.sim.saveSummedRXIntensityInTime:
                 self.summedIntensity += self.RX_Intensity
-
+    
     def aoloop(self):
 
         """
@@ -348,7 +405,6 @@ class Sim(object):
         # Finally save data after loop is over.
         self.saveData()
         self.finishUp()
-
 
     def start_aoloop_thread(self):
         """
@@ -418,20 +474,22 @@ class Sim(object):
         '''
         plt.imshow(self.summedIntensity)
         plt.show()
-
         plt.imshow(abs(np.fft.fft2(self.summedIntensity)))
-        plt.show()
+        plt.show()      
         '''
-
+        
         logger.info("Power at RX: mean {:0.5f} (mW) std {:0.7f} (mW)".format(1e3*np.mean(self.powerInstRX),
                                                         1e3*np.std(self.powerInstRX)))
 
         logger.info("Scintillation idx at RX: mean {:0.5f}, std {:0.7f}".format(  np.mean(self.scintInstIdx),
                                                                         np.std(self.scintInstIdx)))
+        logger.info("Final power P = {} ".format(self.SimHelper.calc_tot_power()))
         logger.info("Time moving atmosphere: {:0.3f} (s)".format(self.Tatmos))
         logger.info("Time propagating Field through the atmoshpere: {:0.3f} (s)".format(self.Tlos))
-
-
+        '''
+        self.MCF2 = np.matrix(np.abs(self.MCF2))
+        self.MCDOC2 = self.MCF2/np.max(self.MCF2)
+        ''' 
     def initSaveData(self):
         '''
         Initialise data structures used for data saving.
@@ -610,6 +668,7 @@ class Sim(object):
         #Beam
         header["POWER"]   = self.config.beam.power
         header["WVL"]     = self.config.beam.wavelength
+
         header["WAIST"]   = self.config.beam.beamWaist
         header["TYPE"]    = self.config.beam.type
         header["PROPDIR"] = self.config.beam.propagationDir
@@ -782,7 +841,6 @@ if __name__ == "__main__":
         confFile = args.configFile
     else:
         confFile = "conf/testConf.py"
-
 
     sim = Sim(confFile)
     print("AOInit...")

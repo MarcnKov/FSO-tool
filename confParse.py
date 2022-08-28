@@ -138,7 +138,8 @@ class PY_Configurator(object):
         self.configDict = simConfiguration
 
     def loadSimParams(self):
-
+        
+        #TO FIX LOGGER MESSAGING HERE 
         self.readfile()
 
         logger.debug("\nLoad Sim Params...")
@@ -164,6 +165,10 @@ class PY_Configurator(object):
         self.rx.loadParams(self.configDict["Receiver"])
 
         self.calcParams()
+        
+        logger.info("===Simulation parameters===")
+        logger.info("Propagtion directon : {}".format(self.rx.propagationDir))
+        logger.info("Simulation type : {}".format(self.sim.simType))
 
     def calcParams(self):
         """
@@ -303,6 +308,7 @@ class PY_Configurator(object):
     def set_nIters(self, x):
         logger.info("nIters is set to : {}".format(x))
         self.sim.nIters = x
+        logger.info("When editing is finished press INIT button.")
     
     def set_loopTime(self, x):
         logger.info("sampling rate is set to : {} ".format(x))
@@ -428,11 +434,11 @@ class ConfigObj(object):
         raise ConfigurationError(message)
 
     def warnAndDefault(self, param, newValue):
-        message = "{0} not set, default to {1}".format(param, newValue)
+        #to make less noisy
+        #message = "{0} not set, default to {1}".format(param, newValue)
         self.__setattr__(param, newValue)
 
-        logger.debug(message)
-
+        #logger.debug(message)
     def initParams(self):
         for param in self.requiredParams:
             self.__setattr__(param, None)
@@ -456,7 +462,8 @@ class ConfigObj(object):
                 try:
                     self.__setattr__(param[0], configDict[param[0]][self.N])
                 except KeyError:
-                    self.warnAndDefault(param[0], param[1])
+                    self.warnAndDefault(param[0], param[1]) 
+                    pass
                 except IndexError:
                     raise ConfigurationError(
                                 "Not enough values for {0}".format(param))
@@ -616,6 +623,7 @@ class SimConfig(ConfigObj):
                             ("logfile", None),
                             ("simOversize", 1.02),
                             ("loopDelay", 0),
+                            ("simType", 'static')
                         ]
 
     # Parameters which may be set at some point and are allowed
@@ -699,7 +707,8 @@ class AtmosConfig(ConfigObj):
                         ("infinite", False),
                         ("wholeScrnSize", None),
                         # ("elevationAngle", 90),
-                        ("randomSeed", None)
+                        ("randomSeed", None),
+                        ("l0", 0.01)
                        ]
 
     # Parameters which may be set at some point and are allowed
@@ -719,8 +728,8 @@ class AtmosConfig(ConfigObj):
         self.windSpeeds = numpy.array(self.windSpeeds)
         if self.L0 is not None:
             self.L0 = numpy.array(self.L0)
-
-
+        
+        
 class TelConfig(ConfigObj):
     
     """

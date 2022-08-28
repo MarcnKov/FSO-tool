@@ -138,14 +138,14 @@
      </rect>
     </property>
     <property name="text">
-     <string>Sampling rate (s)</string>
+     <string>Sampling rate : Δt (s)</string>
     </property>
    </widget>
    <widget class="QLabel" name="rx_ap_diam_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>680</y>
+      <y>730</y>
       <width>181</width>
       <height>17</height>
      </rect>
@@ -163,7 +163,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>740</y>
+      <y>790</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -176,7 +176,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>710</y>
+      <y>760</y>
       <width>141</width>
       <height>17</height>
      </rect>
@@ -362,11 +362,20 @@
       <x>10</x>
       <y>440</y>
       <width>531</width>
-      <height>201</height>
+      <height>251</height>
      </rect>
     </property>
     <property name="title">
      <string>ATMOSPHERE</string>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
     </property>
     <widget class="QLineEdit" name="atmos_fried_r0_input">
      <property name="geometry">
@@ -441,12 +450,31 @@
       </property>
      </item>
     </widget>
+    <widget class="QCheckBox" name="atmos_checkBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>210</y>
+       <width>511</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>                                         Reinitialize ATMOS parameters upon INIT event</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <property name="tristate">
+      <bool>false</bool>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="rx_groupBox">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>650</y>
+      <y>700</y>
       <width>531</width>
       <height>121</height>
      </rect>
@@ -459,7 +487,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>790</y>
+      <y>840</y>
       <width>531</width>
       <height>61</height>
      </rect>
@@ -550,7 +578,7 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>680</y>
+      <y>730</y>
       <width>351</width>
       <height>25</height>
      </rect>
@@ -560,7 +588,7 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>710</y>
+      <y>760</y>
       <width>351</width>
       <height>25</height>
      </rect>
@@ -570,7 +598,7 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>740</y>
+      <y>790</y>
       <width>351</width>
       <height>25</height>
      </rect>

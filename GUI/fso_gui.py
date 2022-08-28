@@ -58,13 +58,7 @@ VERBOSITY   = 3
 ACCEPTED    = QValidator.Acceptable
 INT_TYPE    = 0
 DBL_TYPE    = -1
-
-CMAP    =   {   'mode': 'rgb',
-                'ticks':[   (0., (14, 66, 255, 255)),
-                            (0.5, (255, 255, 255, 255)),
-                            (1., (255, 26, 26, 255))
-                        ]
-            }
+FIRST_GUI_START = True
 
 class GUI(QMainWindow):
 
@@ -89,16 +83,11 @@ class GUI(QMainWindow):
         self.ui.load_params_action.triggered.connect(self.read_param_file)
         self.ui.reload_params_action.triggered.connect(self.reload_param_file)
         
-        #Initialise Colour chooser
-        self.gradient = pg.GradientWidget(orientation="bottom")
-        self.gradient.sigGradientChanged.connect(self.changeLUT)
-        #self.ui.verticalLayout.addWidget(self.gradient)
-        self.gradient.restoreState(CMAP)
-
         #initialize variables
         self.sim = sim
         self.config = self.sim.config
         self.output = self.ui.sim_prog_label.setText
+        self.init_atmos = True
 
         #initialize GUI input fields
         self.init_input_fields()
@@ -124,18 +113,11 @@ class GUI(QMainWindow):
         #Required for plotting colors
         self.colorList = ["b","g","r","c","m","y","k"]
         self.colorNo = 0
-
-        #self.resultPlot = PlotWidget()
-        #self.ui.plotLayout.addWidget(self.resultPlot)
         
-        #initialize GUI plots 
-        #self.init_plots()
-        self.init_metrics_plots() 
-
+        
         #display GUI
         self.show()
         self.init()
-    
     def moveEvent(self, event):
         """
         Overwrite PyQt Move event to force a repaint. (Might) fix a bug on some (my) macs
@@ -174,16 +156,16 @@ class GUI(QMainWindow):
         self.ui.beam_prop_dir_box.activated.connect(lambda :
                 self.config.set_propagationDir(self.ui.beam_prop_dir_box.currentText())) 
         
-        #Modify atmosphere logical window input fields
-        
+        #ATMOSPHERE 
+
         #atmos scrn size
         self.ui.atmos_scrn_size_slider.valueChanged.connect(self.update_slider)
         #beam waist
         self.ui.atmos_n_scrn_input.returnPressed.connect( lambda : 
-                self.validate_num(self.ui.atmos_n_scrn_input, self.config.set_scrnNo, 1, 10000, INT_TYPE))
+                self.validate_num(self.ui.atmos_n_scrn_input, self.config.set_scrnNo, 1, 10000, INT_TYPE, True))
         #Fried r0
         self.ui.atmos_fried_r0_input.returnPressed.connect( lambda : 
-                self.validate_num(self.ui.atmos_fried_r0_input, self.config.set_r0, 0, 10000, DBL_TYPE))
+                self.validate_num(self.ui.atmos_fried_r0_input, self.config.set_r0, 0, 10000, DBL_TYPE, True))
 
         #wind speeds
         #To implmenet
@@ -194,8 +176,11 @@ class GUI(QMainWindow):
         #screen height
         #To implement
 
-        #Modify receiver logical window input fields
-        
+        #check box init
+        self.ui.atmos_checkBox.stateChanged.connect(self.update_atmos_box)
+
+        #RECEIVER
+
         #aperture diameter
         self.ui.rx_ap_diam_input.returnPressed.connect( lambda : 
                 self.validate_num(self.ui.rx_ap_diam_input, self.config.set_diameter, 0, 10000, DBL_TYPE))
@@ -207,14 +192,25 @@ class GUI(QMainWindow):
                 self.validate_num(self.ui.rx_elevation_input, self.config.set_elevationAngle, 0, 180, DBL_TYPE))
         
         
+        logger.info("When finished input press INIT button.")
+    
+    def update_atmos_box(self):
+        
+        if (self.ui.atmos_checkBox.isChecked()):
+            self.init_atmos = True
+            logger.info("Initialize ATMOS upon INIT.")
+        else:
+            self.init_atmos = False
+            logger.info("Don't initialize ATMOS upon INIT.")
+
     def update_slider(self):
         
         slider_value = 2**self.ui.atmos_scrn_size_slider.value()
         self.ui.atmos_scrn_size_label2.setText(str(slider_value))
         self.config.set_wholeScrnSize(slider_value)
-    
+        self.ui.atmos_checkBox.setChecked(True) 
 
-    def validate_num(self, input_field, set_field, low, high, digits):
+    def validate_num(self, input_field, set_field, low, high, digits, atmos = False):
 
         if (digits == 0):
             num_type = int 
@@ -240,7 +236,9 @@ class GUI(QMainWindow):
                                             str(high) )
 
             input_field.setText('')
-
+        
+        if(atmos == True):
+            self.ui.atmos_checkBox.setChecked(True)
     
     def init_metrics_plots(self):
         
@@ -304,14 +302,18 @@ class GUI(QMainWindow):
         self.ui.sim_prog_label.setText("Initializing from configuration file")
         self.ui.sim_prog_bar.setValue(1)
         
-        self.iThread = InitThread(self)
+        self.iThread = InitThread(self, self.init_atmos)
         self.iThread.updateProgressSignal.connect(self.progressUpdate)
-        self.iThread.finished.connect(self.init_plots)
-        # self.iThread.finished.connect(self.plotPupilOverlap)
+        
+        global FIRST_GUI_START
+        if FIRST_GUI_START == True:
+            self.iThread.finished.connect(self.init_plots)
+            self.iThread.finished.connect(self.init_metrics_plots)
+            FIRST_GUI_START = False
+
         self.iThread.start()
         self.config = self.sim.config
-        
-
+    
     def run(self):
         
         self.startTime = time.time()
@@ -345,7 +347,8 @@ class GUI(QMainWindow):
         self.updateTimer.stop()
 
     def restart(self):
-
+        
+        self.restart = True
         self.startTime = time.time()
         #reset sim variables
         self.sim.reset_loop()
@@ -390,7 +393,6 @@ class GUI(QMainWindow):
         self.ui.atmos_wind_speed_input.insert(str(self.config.atmos.windSpeeds)[1:-1])
         self.ui.atmos_wind_dir_input.insert(str(self.config.atmos.windDirs)[1:-1])
         self.ui.atmos_fried_r0_input.insert(str(self.config.atmos.r0))
-               
         self.ui.rx_ap_diam_input.insert(str(self.config.rx.diameter))
         self.ui.rx_height_input.insert(str(self.config.rx.height))
         self.ui.rx_elevation_input.insert(str(self.config.rx.elevationAngle))
@@ -463,15 +465,13 @@ class GUI(QMainWindow):
 
                 L = self.config.tel.telDiam
                 extent = -L/2, L/2, -L/2, L/2
-                img = self.intensity_canvas.axes.imshow(plotDict["Intensity_rx"],
+                img_int = self.intensity_canvas.axes.imshow(plotDict["Intensity_rx"],
                                                         alpha =.9,
                                                         extent=extent)
-                
-                
                 self.intensity_canvas.axes.set_title(
                                                     self.config.beam.propagationDir     +
                                                     'link gaussian beam intensity at '  +
-                                                    str(self.config.rx.height//1000) +  
+                                                    str(self.config.rx.height/1000) +  
                                                     ' (km)', fontsize = 8)
 
                 self.intensity_canvas.axes.set_xlabel(r'$x_n/2$' + ' (m)', fontsize = 5)
@@ -482,25 +482,27 @@ class GUI(QMainWindow):
                 #plots colorbar only for the last iteration
                 #fix: redraw it for each iteration 
                 if (self.sim.iters == self.config.sim.nIters-1):
-                    c_bar = plt.colorbar(img, ax = self.intensity_canvas.axes)
-                    c_bar.ax.set_xlabel(r'$W/m^2$')
-                    c_bar.ax.set_ylabel(r'Intensity')
+                    self.c_bar_int = plt.colorbar(img_int, ax = self.intensity_canvas.axes)
+                    self.c_bar_int.ax.set_xlabel(r'$W/m^2$')
                 self.intensity_canvas.draw()
             
             if (np.any(plotDict["Phase"]) != None):
                 self.phase_canvas.axes.cla()
-                self.phase_canvas.axes.imshow(plotDict["Phase"])
+                img_ph = self.phase_canvas.axes.imshow(plotDict["Phase"])
                 
                 self.phase_canvas.axes.tick_params(axis = 'x', labelsize = 5)
                 self.phase_canvas.axes.tick_params(axis = 'y', labelsize = 5)
                 
-                self.phase_canvas.draw()
+                if (self.sim.iters == self.config.sim.nIters-1):
+                    self.c_bar_phase = plt.colorbar(img_ph, ax = self.phase_canvas.axes)
+                    self.c_bar_phase.ax.set_xlabel(r'$\phi (rad)$')
 
+                self.phase_canvas.draw()
 
             if self.loopRunning:
                 self.update_metrics_plots()
             self.app.processEvents()
-        
+    
     def make_figure_item(self, layout):
         
         canvas  = MplCanvas(self, width=5, height=5, dpi=130)
@@ -525,12 +527,23 @@ class GUI(QMainWindow):
         self.ui.sim_prog_bar.setValue(100)
         self.statsThread = StatsThread(self.sim) 
         logger.info("Init plots is complete")
+        logger.info("To begin press START button.") 
     
     def clear_plots(self):
 
         self.intensity_canvas.axes.cla()
         self.phase_canvas.axes.cla()
-
+        
+        try: 
+            self.c_bar_int.remove()
+        except AttributeError:
+            pass
+        
+        try:
+            self.c_bar_phase.remove()
+        except AttributeError:
+            pass
+        
     def changeLUT(self):
         self.LUT = self.gradient.getLookupTable(256)
 
@@ -561,17 +574,18 @@ class InitThread(QtCore.QThread):
     updateProgressSignal = QtCore.pyqtSignal(str,str,str)
     init_done_signal = QtCore.pyqtSignal()
    
-    def __init__(self, guiObj):
+    def __init__(self, guiObj, init_atmos):
         QtCore.QThread.__init__(self)
         self.guiObj = guiObj
         self.sim = guiObj.sim
+        self.init_atmos = init_atmos
 
     def run(self):
         logger.setStatusFunc(self.progressUpdate)
         if self.sim.go:
             self.guiObj.stop()
 
-        self.sim.aoinit()
+        self.sim.aoinit(init_atmos = self.init_atmos)
 
     def progressUpdate(self, message, i="", maxIter=""):
         self.updateProgressSignal.emit(str(message), str(i), str(maxIter))
@@ -657,7 +671,7 @@ if (__name__ == '__main__'):
         confFile = args.configFile
     else:
         confFile = os.getcwd().replace("GUI","") + "run_sim/sim_conf.yaml"
-    
+
     logger.setLoggingLevel(VERBOSITY)
     sim = simulation.Sim(confFile)
     start_gui(sim)

@@ -167,16 +167,35 @@ class atmos(object):
                 for i in xrange(self.scrnNo):
                     #logger.info("Generate Finite Phase Screen {0}  with r0: {1:.2f}, size: {2}".format(i,self.scrnStrengths[i], self.wholeScrnSize))
                     if self.config.subHarmonics:
+                        '''
                         self.wholeScrns[i] = phasescreen.ft_sh_phase_screen(
                                 self.wholeScrnR0,
                                 self.wholeScrnSize, self.pixel_scale,
                                 self.config.L0[i], 0.01)
+                        ''' 
+                        
+                        self.wholeScrns[i] = phasescreen.ft_sh_phase_screen(
+                                self.r0,
+                                self.wholeScrnSize, self.pixel_scale,
+                                self.config.L0[i], 0.01)
                     else:
+                        '''
                         self.wholeScrns[i] = phasescreen.ft_phase_screen(
                                 self.wholeScrnR0,
                                 self.wholeScrnSize, self.pixel_scale,
                                 self.config.L0[i], 0.01)
-
+                        '''
+                        self.wholeScrns[i] = phasescreen.ft_phase_screen(
+                                self.scrnStrengths[i],
+                                self.wholeScrnSize, self.pixel_scale,
+                                self.config.L0[i], self.config.l0)
+                        '''
+                        #TO DELETE: SIMULATION VERIFICATION PURPOSE
+                        self.wholeScrns[i] = phasescreen.ft_phase_screen(
+                                self.r0,
+                                self.wholeScrnSize, self.pixel_scale,
+                                self.config.L0[i], 0.01)
+                        '''
                     self.scrns[i] = self.wholeScrns[i][:scrnSize,:scrnSize]
                     #logger.info("Finite Phase Screen Size {}".format(numpy.shape(self.scrns[i])))
                 logger.info("Phase Screens generation is finished!")
@@ -367,7 +386,8 @@ class atmos(object):
             # Finally, scale for r0 and turn to nm
             self.scrns[i] *= (self.scrnStrengths[i]/self.wholeScrnR0)**(-5./6.)
         return self.scrns
-
+        
+    #TO DELTE R0 FROM THE FUNCTION ARGUMENT --> SIM VERIFICATION
     def randomScrns(self, subHarmonics=False, l0=0.01):
         """
         Generated random phase screens defined by the atmosphere object parameters.
@@ -380,14 +400,25 @@ class atmos(object):
 
         for i in xrange(self.scrnNo):
             if subHarmonics:
+                
                 self.scrns[i] = phasescreen.ft_sh_phase_screen(
                         self.scrnStrengths[i], self.scrn_size,
                         self.pixel_scale, self.config.L0[i], l0)
+                '''
+                self.scrns[i] = phasescreen.ft_sh_phase_screen(
+                        self.r0, self.scrn_size,
+                        self.pixel_scale, self.config.L0[i], l0)
+                '''
             else:
+                #SIM VERIFICATION
                 self.scrns[i] = phasescreen.ft_phase_screen(
                         self.scrnStrengths[i], self.scrn_size,
+                        self.pixel_scale, self.config.L0[i], self.config.l0)
+                '''
+                self.scrns[i] = phasescreen.ft_phase_screen(
+                        self.r0, self.scrn_size,
                         self.pixel_scale, self.config.L0[i], l0)
-
+                '''
             # Turn to nm
             #self.scrns[i] *= (500./(2*numpy.pi))
 

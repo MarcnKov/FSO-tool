@@ -1,24 +1,33 @@
 simName: ASTRO_TEST
 logFile: ASTRO_TEST.log
+#pupilSize: 3800
 pupilSize: 1000
 nSci: 1
-nIters: 50
-loopTime: 1 
+nIters: 2
+loopTime: .1 
 verbosity: 3
 simOversize: 1
+simType: static
 
 Atmosphere:
-  scrnNo: 10
-  scrnHeights: [10,1000,2500,5000,7500,10000,12500, 15000, 17500, 20000]
-  scrnStrengths: [1e-14,1e-17,5e-18,2e-18,1e-18,2e-18,3e-18,1e-18,1e-18,3e-19] 
+  scrnNo: 1
+  #scrnHeights: [10,1000,2500,5000,7500,10000,12500, 15000, 17500, 20000]
+  #scrnStrengths: [1e-13,1e-14,1e-14,1e-14,1e-15,2e-15,3e-15,1e-16,1e-16,1e-16] 
+  scrnHeights: [50]
+  scrnStrengths: [1e-14]
+  #scrnStrengths: [1e-14,1e-14,1e-14,1e-14,1e-14,1e-14,1e-14,1e-14,1e-14,1e-14]
+
   windDirs: [0,0,0,0,0,0,0,0,0,0]
   windSpeeds: [5,8,2,7.5,17.5,20,17.5,15,10,0.5]
-  wholeScrnSize: 2048
+  wholeScrnSize: 4096
   r0: 0.14 
-  L0: [20,20,20,20,20,20,20,20,20,20]
+  #L0: [10000,10000,10000,10000,10000,10000,10000,10000,10000,10000]
+  L0 : [100]
+  l0 : .01 
+  #subHarmonics: True
 
 Telescope:
-  telDiam: 32.5
+  telDiam: 2
   mask: circle
 
 Beam:
@@ -30,7 +39,7 @@ Beam:
 
 Receiver:
     diameter: 250.0e-3
-    height: 700000 
+    height: 1000 
     elevationAngle: 90
 
 Science:

@@ -26,8 +26,8 @@ class SimHelper():
         
         #RX parameters
         self.N      =   self.config.sim.simSize
-        self.dx     =   self.config.tel.telDiam/self.N
-        self.n_rx_pxls = self.config.rx.diameter/self.dx   
+        self.dx     =   self.config.tel.telDiam/self.config.sim.pupilSize
+        self.n_rx_pxls = self.config.rx.diameter/self.dx 
        
         #Look into other libraries for correct calculations
         self.EField = 0
@@ -37,13 +37,17 @@ class SimHelper():
         
         if (self.config.beam.type == 'gaussian'):
             
-            I_0 = self.P0/(np.pi*self.w0**2)
+            I_0 = 2*self.P0/(np.pi*self.w0**2)
             self.Intensity = I_0*np.abs(Efield)**2
             return self.Intensity 
 
         else:
             return 0 #to implement other beam types
-            
+    
+    def calc_tot_power(self):
+
+        return self.dx**2 * np.sum(self.Intensity)
+
     def calc_RX_intensity(self):
     
         """
@@ -80,6 +84,14 @@ class SimHelper():
         mean        = np.mean(I_aperture,   where = self.aperture)
 
         return variance/mean**2
+    
+    def calc_plane_sci_idx(self):
+
+        variance    = np.var(self.Intensity)
+        mean        = np.mean(self.Intensity)
+
+        return variance/mean**2
+
 
     def gaussian_beam_ext(self, r_sq, z, flag = False):
     
@@ -121,7 +133,6 @@ class SimHelper():
 
     
     def plot_intensity(self, t):
-   
        
         #determine extent
         L = self.config.tel.telDiam
@@ -133,7 +144,7 @@ class SimHelper():
         #Z1 = np.add.outer(range(N), range(N)) % 2 
         #plt.imshow(Z1, interpolation='nearest', alpha = 0.9, extent=extent)
    
-        plt.imshow(self.Intensity, alpha = .9, extent = extent)
+        plt.imshow(self.Intensity, extent = extent)
     
         plt.xlabel(r'$x_n/2$' + ' (m)')
         plt.ylabel(r'$y_n/2$' + ' (m)')
@@ -146,6 +157,6 @@ class SimHelper():
                     'link gaussian beam intensity at ' + str(self.config.rx.height//1000) +  ' (km)')
         plt.clim(0,.1)
 
-        plt.savefig('t' + str(t) + '.png')
-        plt.close(figure)
-        #plt.show()
+        #plt.savefig('t' + str(t) + '.png')
+        #plt.close(figure)
+        plt.show()

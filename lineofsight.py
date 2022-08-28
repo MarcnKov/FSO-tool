@@ -275,7 +275,7 @@ class LineOfSight(object):
         """
                 
         #Electric field
-        self.EField = np.ones([self.nx_out_pixels] * 2, dtype=CDTYPE)
+        self.EField = np.zeros([self.nx_out_pixels] * 2, dtype=CDTYPE)
         
         #turbuelnce phase screens
         self.phase_screens = np.zeros(      (self.n_layers,
@@ -298,9 +298,11 @@ class LineOfSight(object):
         Finds total line of sight complex amplitude
         by propagating light through phase screens
         '''
+        #SWTICH ON : SIMULATION VERIFICATION PURPOSES 
+        #self.EField *= self.mask 
         
-        self.EField *= self.mask 
-        
+        self.s_g = 1 #<-- switch-off absorbing boundary
+
         phs2Rad = 2 * np.pi / self.wvl
 
         z_total  = 0 
@@ -318,7 +320,7 @@ class LineOfSight(object):
                 z = abs(ht_final - self.layer_altitudes[0])
             
             if (self.beam_type == 'gaussian'):
-                self.EField = self.SimHelper.gaussian_beam_ext(self.r_sq, z)
+                self.EField = self.SimHelper.gaussian_beam_ext(self.r_sq, 0.01)
             
             self.EField[:] = opticalpropagation.angularSpectrum(    self.s_g*self.EField,
                                                                     self.wvl,
@@ -326,10 +328,13 @@ class LineOfSight(object):
                                                                     self.out_pxl_scale,
                                                                     z)
             z_total += z
-        
+            #self.EField[:] *= np.exp(-1j/(0.00001*self.wvl)*self.r_sq)
+
         #Propagate electrical field via phase screens
         for i in range(0, self.n_layers):
             
+            #phase = 0
+
             phase = self.phase_screens[i]
              
             # Convert phase to radians
@@ -338,7 +343,7 @@ class LineOfSight(object):
             # Change sign if propagating up
             if (self.prop_dir == 'up'):
                 phase *= -1
-
+            
             # Apply phase to EField
             self.EField *= np.exp(1j*phase)
 
@@ -360,9 +365,7 @@ class LineOfSight(object):
                                                                     self.in_pxl_scale,
                                                                     self.out_pxl_scale,
                                                                     z)
-
-        #beam collimation
-        #EFieldBuf *= np.exp(-1j/(0.1*wvl)*r_sq)
+            #self.EField[:] *= np.exp(-1j/(0.00001*self.wvl)*self.r_sq)
 
 
     def frame(self):
