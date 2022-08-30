@@ -1,4 +1,4 @@
 # FSO-tool
 
-![GUI](GUI/gui.png)
+![GUI](GUI/GUI.png)
 
