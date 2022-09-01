@@ -740,20 +740,26 @@ class Sim(object):
                 
                 self.intensity_rx= {}
                 self.phase       = {}
-                               
+                self.tot_power   = 0 
+                
                 try:
                     self.intensity_rx = self.Intensity
                 except AttributeError:
                     self.intensity_rx = None 
-                
                 try:
                     self.phase = self.atmos.scrns[-1] 
                 except AttributeError:
                     self.phase = None
                 
+                try:
+                    self.tot_power = self.SimHelper.calc_tot_power()
+                except AttributeError:
+                    self.tot_power = 0
+                
                 guiPut =    {
                                 "Intensity_rx"   :  self.intensity_rx,
-                                "Phase"          :  self.phase
+                                "Phase"          :  self.phase,
+                                "tot_power"      :  self.tot_power
                             }
                 
                 self.guiLock.lock()

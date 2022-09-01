@@ -87,6 +87,8 @@ class GUI(QMainWindow):
         self.sim = sim
         self.config = self.sim.config
         self.output = self.ui.sim_prog_label.setText
+        self.output2 = self.ui.sim_prog_label_2.setText
+ 
         self.init_atmos = True
 
         #initialize GUI input fields
@@ -114,10 +116,10 @@ class GUI(QMainWindow):
         self.colorList = ["b","g","r","c","m","y","k"]
         self.colorNo = 0
         
-        
         #display GUI
         self.show()
         self.init()
+    
     def moveEvent(self, event):
         """
         Overwrite PyQt Move event to force a repaint. (Might) fix a bug on some (my) macs
@@ -127,7 +129,7 @@ class GUI(QMainWindow):
 
     def verify_and_set_user_input(self):
         
-        #Modify simulation logical window input fields
+        #SIMULATION
         #grid size
         self.ui.sim_grid_size_input.returnPressed.connect( lambda : 
                 self.validate_num(self.ui.sim_grid_size_input, self.config.set_simSize, 0, 10000, INT_TYPE))
@@ -137,10 +139,19 @@ class GUI(QMainWindow):
         #num iterations
         self.ui.sim_num_iter_input.returnPressed.connect( lambda : 
                 self.validate_num(self.ui.sim_num_iter_input, self.config.set_nIters, 1, 10000, INT_TYPE))
+        #simulation type
+        self.ui.sim_type_box.activated.connect(lambda : 
+                self.config.set_simType(self.ui.sim_type_box.currentText()))
+        
         #sampling rate
         self.ui.sim_sample_rate_input.returnPressed.connect( lambda :
                 self.validate_num(self.ui.sim_sample_rate_input, self.config.set_loopTime, 0, 10000, DBL_TYPE))
         
+        '''
+        if (float(self.ui.sim_sample_rate_input.text()) > 0):
+            self.config.set_simType('dynamic')
+            self.ui.beam_type_box.setCurrentIndex(1)
+        '''
         #Modify optical beam logical window input fields
 
         #power
@@ -168,13 +179,25 @@ class GUI(QMainWindow):
                 self.validate_num(self.ui.atmos_fried_r0_input, self.config.set_r0, 0, 10000, DBL_TYPE, True))
 
         #wind speeds
-        #To implmenet
-        
+        self.ui.atmos_wind_speed_input.returnPressed.connect(lambda :
+                self.validate_array(self.ui.atmos_wind_speed_input, self.config.set_windSpeeds, 0, 10000, DBL_TYPE, True))
+
         #wind dirs
-        #To implmenet
+        self.ui.atmos_wind_dir_input.returnPressed.connect(lambda :
+                self.validate_array(self.ui.atmos_wind_dir_input, self.config.set_windDirs, 0, 360, DBL_TYPE, True))
 
         #screen height
-        #To implement
+        self.ui.atmos_scrn_alt_input.returnPressed.connect(lambda :
+                self.validate_array(self.ui.atmos_scrn_alt_input, self.config.set_scrnHeights, 0, 100000000000, DBL_TYPE, True))
+
+        #C2n
+        self.ui.atmos_c2n_input.returnPressed.connect(lambda :
+                self.validate_array(self.ui.atmos_c2n_input, self.config.set_scrnStrengths, 0, 100000000000, DBL_TYPE, True))
+
+        #L0
+        self.ui.atmos_L0_input.returnPressed.connect(lambda :
+                self.validate_array(self.ui.atmos_L0_input, self.config.set_L0, 0, 100000000000, DBL_TYPE, True))
+
 
         #check box init
         self.ui.atmos_checkBox.stateChanged.connect(self.update_atmos_box)
@@ -229,17 +252,61 @@ class GUI(QMainWindow):
             input_field.setFocus()
 
         else:
-            self.output("Input is invalid. Valid input is "         +   \
-                                             str(num_type)          +   \
-                                            " number ranging from " +   \
-                                            str(low) +  " to "      +   \
-                                            str(high) )
-
+            self.output("Valid range is from " + str(low) +  " to " + str(high))
             input_field.setText('')
         
         if(atmos == True):
             self.ui.atmos_checkBox.setChecked(True)
     
+    def validate_array(self, input_field, set_field, low, high, digits, atmos = False):
+        
+        if (digits == 0):
+            num_type = int 
+        else:
+            num_type = float
+
+        valid_input     = True
+        len_exceeded    = False
+
+        validated_arr   = []
+        validation_rule = QDoubleValidator(low, high, digits)
+        
+        input_num = input_field.text().replace('.',',')
+        input_arr = input_num.split()
+        
+        if (len(input_arr) > self.config.atmos.scrnNo):
+
+            self.output("Array size can't be greater than Number of screens !")
+            input_arr = input_arr[0:self.config.atmos.scrnNo]
+            len_exceeded = True
+
+        for input_num in input_arr:
+            
+            validation_cond = validation_rule.validate(input_num, 0)[0] 
+
+            if (validation_cond == ACCEPTED):
+                validated_arr.append(num_type(input_num.replace(',','.')))
+                
+            else:
+                valid_input = False
+                break
+       
+        if (valid_input):
+            set_field(validated_arr)
+            input_field.setFocus()
+        else:
+            self.output("Input is invalid ! Separate entries using space.")
+            self.output2("Valid range is from " + str(low) +  " to " + str(high))
+            input_field.setText('')
+
+        if(atmos == True):
+            self.ui.atmos_checkBox.setChecked(True)
+        
+        if(len_exceeded):
+            input_field.setText('')
+            input_field.insert(str(validated_arr)[1:-1])
+
+
     def init_metrics_plots(self):
         
         self.power_result_plot = PlotWidget()
@@ -247,10 +314,13 @@ class GUI(QMainWindow):
 
         self.ui.power_rx_layout.addWidget(self.power_result_plot)
         self.power_rx_ax = self.power_result_plot.canvas.ax
-        self.power_rx_ax.set_xlabel("Iterations x Δt  ",fontsize="medium")
+        
+        if (self.config.sim.simType == 'static'):
+            self.power_rx_ax.set_xlabel("Iterations",fontsize="medium")
+        else:
+            self.power_rx_ax.set_xlabel("Iterations x Δt",fontsize="medium")
+        
         self.power_rx_ax.set_ylabel("Power (mW)",fontsize="medium")
-        self.power_rx_ax.set_ylim(0, 2)
-        self.power_rx_ax.set_xlim(0, self.config.sim.nIters)
         self.power_rx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
         self.power_rx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
         
@@ -258,13 +328,16 @@ class GUI(QMainWindow):
         self.ui.sci_idx_rx_layout.addWidget(self.scint_result_plot)
         
         self.sci_idx_ax = self.scint_result_plot.canvas.ax
-        self.sci_idx_ax.set_xlabel("Iterations x Δt",fontsize="medium")
+        
+        if (self.config.sim.simType == 'static'):
+            self.sci_idx_ax.set_xlabel("Iterations",fontsize="medium")
+        else:
+            self.sci_idx_ax.set_xlabel("Iterations x Δt",fontsize="medium")
+
         self.sci_idx_ax.set_ylabel("Scintillation index ",fontsize="medium")
-        self.sci_idx_ax.set_ylim(0, 0.3)
-        self.sci_idx_ax.set_xlim(0, self.config.sim.nIters)
         self.sci_idx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
         self.sci_idx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
-
+       
         self.colorNo += 1
         if (self.colorNo == len(self.colorList)):
             self.colorNo = 0
@@ -287,12 +360,30 @@ class GUI(QMainWindow):
         try:
             self.power_rx_ax.clear()
             self.power_result_plot.canvas.draw()
+            if (self.config.sim.simType == 'static'):
+                self.power_rx_ax.set_xlabel("Iterations",fontsize="medium")
+            else:
+                self.power_rx_ax.set_xlabel("Iterations x Δt",fontsize="medium")
+            self.power_rx_ax.set_ylabel("Power (mW)",fontsize="medium")
+            self.power_rx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
+            self.power_rx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
+
         except AttributeError:
             logger.info("Power metric plot isn't cleared !")
         
         try:
             self.sci_idx_ax.clear()
             self.scint_result_plot.canvas.draw()
+
+            if (self.config.sim.simType == 'static'):
+                self.sci_idx_ax.set_xlabel("Iterations",fontsize="medium")
+            else:
+                self.sci_idx_ax.set_xlabel("Iterations x Δt",fontsize="medium")
+
+            self.sci_idx_ax.set_ylabel("Scintillation index ",fontsize="medium")
+            self.sci_idx_ax.tick_params(axis='both', which='major', labelsize="xx-small")
+            self.sci_idx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
+
         except AttributeError:
             logger.info("Scintillation metric plot isn't cleared !")
 
@@ -372,31 +463,39 @@ class GUI(QMainWindow):
         self.ui.sim_grid_scale_input.insert(str(self.config.tel.telDiam))
         self.ui.sim_num_iter_input.insert(str(self.config.sim.nIters))
         self.ui.sim_sample_rate_input.insert(str(self.config.sim.loopTime))
+        self.ui.sim_type_box.setCurrentIndex(0)
         
         #optical beam field
         self.ui.beam_power_input.insert(str(self.config.beam.power))
         self.ui.beam_wvl_input.insert(str(self.config.beam.wavelength))
         self.ui.beam_waist_input.insert(str(self.config.beam.beamWaist))
         self.ui.beam_prop_dir_box.setCurrentIndex(0)
+        self.ui.beam_type_box.setCurrentIndex(0)
 
         if (self.config.beam.propagationDir == 'up'):
             self.ui.beam_prop_dir_box.setCurrentIndex(0)
         else:
             self.ui.beam_prop_dir_box.setCurrentIndex(1)
 
-        #atmosphere field
+        #ATMOSPHERE
         scrn_size_log2 = int(np.log2(self.config.atmos.wholeScrnSize))
         self.ui.atmos_scrn_size_slider.setProperty("value",scrn_size_log2)
         self.ui.atmos_scrn_size_slider.setSliderPosition(scrn_size_log2)
         self.ui.atmos_scrn_size_label2.setText(str(self.config.atmos.wholeScrnSize))
         self.ui.atmos_n_scrn_input.insert(str(self.config.atmos.scrnNo))
-        self.ui.atmos_wind_speed_input.insert(str(self.config.atmos.windSpeeds)[1:-1])
-        self.ui.atmos_wind_dir_input.insert(str(self.config.atmos.windDirs)[1:-1])
+        self.ui.atmos_wind_speed_input.insert(str(self.config.atmos.windSpeeds[0:self.config.atmos.scrnNo])[1:-1])
+        self.ui.atmos_wind_dir_input.insert(str(self.config.atmos.windDirs[0:self.config.atmos.scrnNo])[1:-1])
         self.ui.atmos_fried_r0_input.insert(str(self.config.atmos.r0))
+        self.ui.atmos_l0_input.insert(str(self.config.atmos.l0))
+        self.ui.atmos_L0_input.insert(str(self.config.atmos.L0[0:self.config.atmos.scrnNo])[1:-1])
+        self.ui.atmos_c2n_input.insert(str(self.config.atmos.scrnStrengths[0:self.config.atmos.scrnNo]).replace("'", "")[1:-1])
+        self.ui.atmos_scrn_alt_input.insert(str(self.config.atmos.scrnHeights[0:self.config.atmos.scrnNo])[1:-1])
+
+        #RECEIVER
         self.ui.rx_ap_diam_input.insert(str(self.config.rx.diameter))
         self.ui.rx_height_input.insert(str(self.config.rx.height))
         self.ui.rx_elevation_input.insert(str(self.config.rx.elevationAngle))
-
+        
     
     def read_param_file(self):
 
@@ -458,10 +557,12 @@ class GUI(QMainWindow):
         self.updateLock.unlock()
         
         if plotDict:
-
+            
+            self.clear_plots()
+            
             if (np.any(plotDict["Intensity_rx"]) != None):
                 
-                self.intensity_canvas.axes.cla()
+                #self.intensity_canvas.axes.cla()
 
                 L = self.config.tel.telDiam
                 extent = -L/2, L/2, -L/2, L/2
@@ -487,7 +588,7 @@ class GUI(QMainWindow):
                 self.intensity_canvas.draw()
             
             if (np.any(plotDict["Phase"]) != None):
-                self.phase_canvas.axes.cla()
+                #self.phase_canvas.axes.cla()
                 img_ph = self.phase_canvas.axes.imshow(plotDict["Phase"])
                 
                 self.phase_canvas.axes.tick_params(axis = 'x', labelsize = 5)
@@ -498,6 +599,10 @@ class GUI(QMainWindow):
                     self.c_bar_phase.ax.set_xlabel(r'$\phi (rad)$')
 
                 self.phase_canvas.draw()
+
+            if (np.any(plotDict["tot_power"]) != None):
+
+                self.ui.sim_total_power_label.setText("Power : "+ str(round(plotDict["tot_power"], 5)) +  " (W)")
 
             if self.loopRunning:
                 self.update_metrics_plots()
@@ -536,12 +641,12 @@ class GUI(QMainWindow):
         
         try: 
             self.c_bar_int.remove()
-        except AttributeError:
+        except:
             pass
         
         try:
             self.c_bar_phase.remove()
-        except AttributeError:
+        except:
             pass
         
     def changeLUT(self):

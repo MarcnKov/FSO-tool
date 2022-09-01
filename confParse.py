@@ -298,86 +298,69 @@ class PY_Configurator(object):
     
     #simulation setters
     def set_simSize(self, x):
-        logger.info("Sim size is set to : {}".format(x))
         self.simSize = x
     
     def set_gridScale(self, x):
-        logger.info("grid scale is set to : {} ".format(x))
         self.tel.telDiam = x
     
     def set_nIters(self, x):
-        logger.info("nIters is set to : {}".format(x))
         self.sim.nIters = x
-        logger.info("When editing is finished press INIT button.")
     
     def set_loopTime(self, x):
-        logger.info("sampling rate is set to : {} ".format(x))
         self.sim.loopTime = x
+    
+    def set_simType(self, x):
+        self.sim.simType = x
 
     #optical beam setters 
     def set_power(self, x):
-        logger.info("optical beam power is set to : {}".format(x))
         self.beam.power = x
     
     def set_wvl(self, x):
-        logger.info("optical wvl is set to : {}".format(x))
         self.beam.wavelength = x
     
     def set_beamWaist(self, x):
-        logger.info("optical beam is set to : {}".format(x))
         self.beam.beamWaist = x
     
     def set_propagationDir(self, x):
-        logger.info("Optical propagation dir is set to : {}".format(x))
         self.beam.propagationDir = x
     
     #atmosphere params
     def set_wholeScrnSize(self, x):
-        logger.info("atmos scrn size is set to : {}".format(x))
         self.atmos.wholeScrnSize = x
     
     def set_scrnNo(self, x):
-        logger.info("screen number is set to : {}".format(x))
         self.atmos.scrnNo = x
     
     def set_r0(self, x):
-        logger.info("r0 is set to : {}".format(x))
         self.atmos.r0 = x
     
     def set_windDirs(self, x):
-        logger.info("Wind direction is set to : {}".format(x))
-        self.windDirs = numpy.repeat(x, int(self.atmos.scrnNo))
+        self.atmos.windDirs = x 
     
     def set_windSpeeds(self, x):
-        logger.info("Wind speeds are set to {}".format(x))
-        self.windSpeeds = numpy.repeat(x, int(self.atmos.scrnNo))
+        self.atmos.windSpeeds = numpy.array(x)
+    
+    def set_L0(self, x):
+        self.atmos.L0 = x
+    
+    def set_scrnStrengths(self, x):
+        self.atmos.scrnStrengths = x
+    
+    def set_scrnHeights(self, x):
+        self.atmos.scrnHeights = x
 
     #rx params
     def set_diameter(self, x):
-        logger.info("rx diameter is set to : {} ".format(x))
         self.rx.diameter = x
     
     def set_height(self, x):
-        logger.info("height is set to : {} ".format(x))
         self.rx.height = x
     
     def set_elevationAngle(self, x):
-        logger.info("elevation is set to : {} ".format(x))
         self.rx.elevationAngle = x
     
-    '''
-    def set_gridScale(self, x):
-        print("grid scale is set to : ", x)
-        self.tel.telDiam = x
-    
-    def set_gridScale(self, x):
-        print("grid scale is set to : ", x)
-        self.tel.telDiam = x
-    
-    def set_gridScale(self, x):
-        print("grid scale is set to : ", x)
-        self.tel.telDiam = x
-    '''
+        
 class YAML_Configurator(PY_Configurator):
 
     def readfile(self):

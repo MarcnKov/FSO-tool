@@ -21,9 +21,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>310</y>
+      <y>330</y>
       <width>171</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -33,10 +33,10 @@
    <widget class="QLabel" name="beam_wvl_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>340</y>
+      <x>280</x>
+      <y>330</y>
       <width>181</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -47,9 +47,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>370</y>
+      <y>360</y>
       <width>171</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -59,10 +59,10 @@
    <widget class="QLabel" name="beam_prop_dir_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>400</y>
+      <x>280</x>
+      <y>360</y>
       <width>161</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -72,9 +72,9 @@
    <widget class="QComboBox" name="beam_prop_dir_box">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>400</y>
-      <width>331</width>
+      <x>440</x>
+      <y>360</y>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -93,9 +93,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>150</y>
-      <width>181</width>
-      <height>17</height>
+      <y>180</y>
+      <width>141</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -107,8 +107,8 @@
      <rect>
       <x>20</x>
       <y>210</y>
-      <width>181</width>
-      <height>17</height>
+      <width>151</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -118,10 +118,10 @@
    <widget class="QLabel" name="sim_grid_scale_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>290</x>
       <y>180</y>
       <width>181</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -131,10 +131,10 @@
    <widget class="QLabel" name="sim_sample_rate_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>240</y>
+      <x>290</x>
+      <y>210</y>
       <width>151</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -145,9 +145,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>730</y>
+      <y>750</y>
       <width>181</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="font">
@@ -163,9 +163,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>790</y>
+      <y>780</y>
       <width>151</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -176,9 +176,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>760</y>
+      <y>810</y>
       <width>141</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -189,9 +189,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>520</y>
+      <y>510</y>
       <width>181</width>
-      <height>17</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -202,9 +202,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>580</y>
+      <y>600</y>
       <width>151</width>
-      <height>17</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -214,10 +214,10 @@
    <widget class="QLabel" name="atmos_fried_r0_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>550</y>
-      <width>121</width>
-      <height>17</height>
+      <x>300</x>
+      <y>510</y>
+      <width>101</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -228,9 +228,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>610</y>
+      <y>630</y>
       <width>141</width>
-      <height>17</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -240,9 +240,9 @@
    <widget class="QSlider" name="atmos_scrn_size_slider">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>460</y>
-      <width>331</width>
+      <x>190</x>
+      <y>450</y>
+      <width>341</width>
       <height>51</height>
      </rect>
     </property>
@@ -272,7 +272,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>480</y>
+      <y>470</y>
       <width>111</width>
       <height>17</height>
      </rect>
@@ -285,9 +285,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>120</y>
+      <y>150</y>
       <width>531</width>
-      <height>151</height>
+      <height>141</height>
      </rect>
     </property>
     <property name="title">
@@ -302,9 +302,9 @@
     <widget class="QLineEdit" name="sim_grid_scale_input">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>60</y>
-       <width>331</width>
+       <x>430</x>
+       <y>30</y>
+       <width>91</width>
        <height>25</height>
       </rect>
      </property>
@@ -312,9 +312,9 @@
     <widget class="QLineEdit" name="sim_num_iter_input">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>90</y>
-       <width>331</width>
+       <x>170</x>
+       <y>60</y>
+       <width>91</width>
        <height>25</height>
       </rect>
      </property>
@@ -322,9 +322,9 @@
     <widget class="QLineEdit" name="sim_sample_rate_input">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>120</y>
-       <width>331</width>
+       <x>430</x>
+       <y>60</y>
+       <width>91</width>
        <height>25</height>
       </rect>
      </property>
@@ -332,9 +332,9 @@
     <widget class="QLineEdit" name="sim_grid_size_input">
      <property name="geometry">
       <rect>
-       <x>190</x>
+       <x>170</x>
        <y>30</y>
-       <width>331</width>
+       <width>91</width>
        <height>25</height>
       </rect>
      </property>
@@ -342,27 +342,92 @@
       <set>Qt::ImhDigitsOnly</set>
      </property>
     </widget>
+    <widget class="QComboBox" name="sim_type_box">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>100</y>
+       <width>86</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>static</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>dynamic</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QComboBox" name="sim_type_box_2">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>220</y>
+       <width>86</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>Static</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Dynamic</string>
+      </property>
+     </item>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="beam_groupBox">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>280</y>
+      <y>300</y>
       <width>531</width>
-      <height>151</height>
+      <height>121</height>
      </rect>
     </property>
     <property name="title">
      <string>OPTICAL BEAM</string>
     </property>
+    <widget class="QLineEdit" name="beam_wvl_input">
+     <property name="geometry">
+      <rect>
+       <x>430</x>
+       <y>30</y>
+       <width>91</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="beam_type_box">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>90</y>
+       <width>91</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>Gaussian</string>
+      </property>
+     </item>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="atmos_groupBox">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>440</y>
+      <y>430</y>
       <width>531</width>
-      <height>251</height>
+      <height>291</height>
      </rect>
     </property>
     <property name="title">
@@ -380,9 +445,9 @@
     <widget class="QLineEdit" name="atmos_fried_r0_input">
      <property name="geometry">
       <rect>
-       <x>170</x>
-       <y>110</y>
-       <width>351</width>
+       <x>430</x>
+       <y>80</y>
+       <width>91</width>
        <height>25</height>
       </rect>
      </property>
@@ -390,9 +455,9 @@
     <widget class="QLineEdit" name="atmos_wind_speed_input">
      <property name="geometry">
       <rect>
-       <x>310</x>
-       <y>140</y>
-       <width>211</width>
+       <x>170</x>
+       <y>170</y>
+       <width>351</width>
        <height>25</height>
       </rect>
      </property>
@@ -400,9 +465,9 @@
     <widget class="QLineEdit" name="atmos_wind_dir_input">
      <property name="geometry">
       <rect>
-       <x>310</x>
-       <y>170</y>
-       <width>211</width>
+       <x>170</x>
+       <y>200</y>
+       <width>351</width>
        <height>25</height>
       </rect>
      </property>
@@ -412,7 +477,7 @@
       <rect>
        <x>170</x>
        <y>80</y>
-       <width>351</width>
+       <width>91</width>
        <height>25</height>
       </rect>
      </property>
@@ -430,37 +495,17 @@
       <string/>
      </property>
     </widget>
-    <widget class="QComboBox" name="atmos_wind_speed_input_conf">
-     <property name="geometry">
-      <rect>
-       <x>170</x>
-       <y>140</y>
-       <width>131</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text">
-       <string>single input</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>array input</string>
-      </property>
-     </item>
-    </widget>
     <widget class="QCheckBox" name="atmos_checkBox">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>210</y>
-       <width>511</width>
+       <x>290</x>
+       <y>110</y>
+       <width>231</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>                                         Reinitialize ATMOS parameters upon INIT event</string>
+      <string>   Reinitialize  ATMOS upon INIT</string>
      </property>
      <property name="checked">
       <bool>true</bool>
@@ -469,12 +514,32 @@
       <bool>false</bool>
      </property>
     </widget>
+    <widget class="QLineEdit" name="atmos_l0_input">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>110</y>
+       <width>91</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="atmos_L0_input">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>140</y>
+       <width>351</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="rx_groupBox">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>700</y>
+      <y>720</y>
       <width>531</width>
       <height>121</height>
      </rect>
@@ -487,7 +552,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>840</y>
+      <y>850</y>
       <width>531</width>
       <height>61</height>
      </rect>
@@ -565,7 +630,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
+      <y>110</y>
       <width>511</width>
       <height>21</height>
      </rect>
@@ -578,8 +643,8 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>730</y>
-      <width>351</width>
+      <y>750</y>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -588,8 +653,8 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>760</y>
-      <width>351</width>
+      <y>810</y>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -598,8 +663,8 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>790</y>
-      <width>351</width>
+      <y>780</y>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -607,19 +672,9 @@
    <widget class="QLineEdit" name="beam_power_input">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>310</y>
-      <width>331</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="beam_wvl_input">
-    <property name="geometry">
-     <rect>
-      <x>200</x>
-      <y>340</y>
-      <width>331</width>
+      <x>180</x>
+      <y>330</y>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -627,9 +682,9 @@
    <widget class="QLineEdit" name="beam_waist_input">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>370</y>
-      <width>331</width>
+      <x>180</x>
+      <y>360</y>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -640,7 +695,7 @@
       <x>10</x>
       <y>0</y>
       <width>531</width>
-      <height>111</height>
+      <height>141</height>
      </rect>
     </property>
     <property name="title">
@@ -663,8 +718,8 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>60</y>
-       <width>251</width>
+       <y>80</y>
+       <width>171</width>
        <height>20</height>
       </rect>
      </property>
@@ -675,9 +730,9 @@
     <widget class="QLabel" name="sim_prog_iters_label">
      <property name="geometry">
       <rect>
-       <x>280</x>
-       <y>60</y>
-       <width>241</width>
+       <x>190</x>
+       <y>80</y>
+       <width>151</width>
        <height>20</height>
       </rect>
      </property>
@@ -685,26 +740,32 @@
       <string/>
      </property>
     </widget>
-   </widget>
-   <widget class="QComboBox" name="atmos_wind_dir_input_conf">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>610</y>
-      <width>131</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>single input</string>
+    <widget class="QLabel" name="sim_total_power_label">
+     <property name="geometry">
+      <rect>
+       <x>360</x>
+       <y>80</y>
+       <width>151</width>
+       <height>20</height>
+      </rect>
      </property>
-    </item>
-    <item>
      <property name="text">
-      <string>array input</string>
+      <string/>
      </property>
-    </item>
+    </widget>
+    <widget class="QLabel" name="sim_prog_label_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>521</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
@@ -773,7 +834,7 @@
       <x>560</x>
       <y>510</y>
       <width>601</width>
-      <height>341</height>
+      <height>391</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="power_rx_layout"/>
@@ -784,7 +845,7 @@
       <x>1180</x>
       <y>510</y>
       <width>581</width>
-      <height>341</height>
+      <height>391</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="sci_idx_rx_layout"/>
@@ -800,6 +861,137 @@
     </property>
     <property name="text">
      <string>Scintillation index at RX plane</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="atmos_wind_dir_label_2">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>1080</y>
+      <width>141</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Wind direction  (deg)</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="atmos_wind_dir_input_conf_2">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>1080</y>
+      <width>131</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>single input</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>array input</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLineEdit" name="atmos_scrn_alt_input">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>660</y>
+      <width>351</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="atmos_scrn_alt_label">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>660</y>
+      <width>141</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Screen heights (m)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="atmos_l0_label">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>540</y>
+      <width>131</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>l0 (m)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="atmos_wind_speed_label_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>570</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>L0 (m)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="sim_type_label">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>250</y>
+      <width>141</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Simulation type</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="sim_type_label_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>390</y>
+      <width>141</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Beam type</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="atmos_c2n_label">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>690</y>
+      <width>141</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>C2n</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="atmos_c2n_input">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>690</y>
+      <width>351</width>
+      <height>25</height>
+     </rect>
     </property>
    </widget>
    <zorder>groupBox</zorder>
@@ -831,9 +1023,7 @@
    <zorder>rx_height_input</zorder>
    <zorder>rx_elevation_input</zorder>
    <zorder>beam_power_input</zorder>
-   <zorder>beam_wvl_input</zorder>
    <zorder>beam_waist_input</zorder>
-   <zorder>atmos_wind_dir_input_conf</zorder>
    <zorder>widget</zorder>
    <zorder>label</zorder>
    <zorder>widget_2</zorder>
@@ -842,6 +1032,16 @@
    <zorder>widget_3</zorder>
    <zorder>widget_4</zorder>
    <zorder>label_4</zorder>
+   <zorder>atmos_wind_dir_label_2</zorder>
+   <zorder>atmos_wind_dir_input_conf_2</zorder>
+   <zorder>atmos_scrn_alt_input</zorder>
+   <zorder>atmos_scrn_alt_label</zorder>
+   <zorder>atmos_l0_label</zorder>
+   <zorder>atmos_wind_speed_label_2</zorder>
+   <zorder>sim_type_label</zorder>
+   <zorder>sim_type_label_2</zorder>
+   <zorder>atmos_c2n_label</zorder>
+   <zorder>atmos_c2n_input</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
