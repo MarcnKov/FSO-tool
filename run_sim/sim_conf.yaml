@@ -1,24 +1,23 @@
 simName: ASTRO_TEST
 logFile: ASTRO_TEST.log
-#pupilSize: 3800
 pupilSize: 1000
 nSci: 1
-nIters: 2
-loopTime: .1 
-verbosity: 3
+nIters: 10
+loopTime: .001 
+verbosity: 0
 simOversize: 1
-simType: static
+simType: dynamic
 
 Atmosphere:
-  scrnNo: 1
-  scrnHeights: [10,1000,2500,5000,7500,10000,12500, 15000, 17500, 20000]
-  scrnStrengths: [1e-14,1e-14,1e-14,1e-14,1e-14,1e-14,1e-14,1e-14,1e-14,1e-14]
-  windDirs: [0,0,0,0,0,0,0,0,0,0]
-  windSpeeds: [5,8,2,7.5,17.5,20,17.5,15,10,0.5]
-  wholeScrnSize: 4096
+  wholeScrnSize: 1024
+  scrnNo: 2
   r0: 0.14 
-  L0: [100,10000,10000,10000,10000,10000,10000,10000,10000,10000]
   l0 : .01 
+  scrnHeights: [10,15]
+  scrnStrengths: [1e-14,1e-14]
+  windDirs: [0,0]
+  windSpeeds: [5, 10]
+  L0: [100, 100]
   #subHarmonics: True
 
 Telescope:

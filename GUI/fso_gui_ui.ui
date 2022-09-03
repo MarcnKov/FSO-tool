@@ -732,7 +732,7 @@
       <rect>
        <x>190</x>
        <y>80</y>
-       <width>151</width>
+       <width>191</width>
        <height>20</height>
       </rect>
      </property>
@@ -743,9 +743,9 @@
     <widget class="QLabel" name="sim_total_power_label">
      <property name="geometry">
       <rect>
-       <x>360</x>
+       <x>380</x>
        <y>80</y>
-       <width>151</width>
+       <width>141</width>
        <height>20</height>
       </rect>
      </property>
@@ -781,7 +781,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>570</x>
+      <x>860</x>
       <y>0</y>
       <width>67</width>
       <height>17</height>
@@ -805,7 +805,7 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>1180</x>
+      <x>1480</x>
       <y>0</y>
       <width>67</width>
       <height>17</height>
@@ -818,7 +818,7 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>560</x>
+      <x>820</x>
       <y>480</y>
       <width>151</width>
       <height>17</height>
@@ -853,7 +853,7 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>1180</x>
+      <x>1420</x>
       <y>480</y>
       <width>211</width>
       <height>17</height>

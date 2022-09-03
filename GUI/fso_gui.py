@@ -88,7 +88,8 @@ class GUI(QMainWindow):
         self.config = self.sim.config
         self.output = self.ui.sim_prog_label.setText
         self.output2 = self.ui.sim_prog_label_2.setText
- 
+        self.set_prog_bar = self.ui.sim_prog_bar.setValue
+
         self.init_atmos = True
 
         #initialize GUI input fields
@@ -188,7 +189,7 @@ class GUI(QMainWindow):
 
         #screen height
         self.ui.atmos_scrn_alt_input.returnPressed.connect(lambda :
-                self.validate_array(self.ui.atmos_scrn_alt_input, self.config.set_scrnHeights, 0, 100000000000, DBL_TYPE, True))
+                self.validate_array(self.ui.atmos_scrn_alt_input, self.config.set_scrnHeights, 0, 100000000000, DBL_TYPE, False))
 
         #C2n
         self.ui.atmos_c2n_input.returnPressed.connect(lambda :
@@ -248,6 +249,7 @@ class GUI(QMainWindow):
         if (validation_cond == ACCEPTED):
 
             self.output("Input is accepted !")
+            self.output2("Input is set to : " +str(input_num))
             set_field(num_type(input_num.replace(',','.'))) 
             input_field.setFocus()
 
@@ -292,7 +294,10 @@ class GUI(QMainWindow):
                 break
        
         if (valid_input):
+
             set_field(validated_arr)
+            self.output("Input is accepted ! ")
+            self.output2("Input is set to : " + str(validated_arr))
             input_field.setFocus()
         else:
             self.output("Input is invalid ! Separate entries using space.")
@@ -301,7 +306,8 @@ class GUI(QMainWindow):
 
         if(atmos == True):
             self.ui.atmos_checkBox.setChecked(True)
-        
+        else:
+            self.output2("No need to reinitialize ATMOS upon INIT.")
         if(len_exceeded):
             input_field.setText('')
             input_field.insert(str(validated_arr)[1:-1])
@@ -409,7 +415,9 @@ class GUI(QMainWindow):
         
         self.startTime = time.time()
 
-        self.ui.sim_prog_label.setText("Running simulation loop...")
+        self.output("Running simulation loop...")
+        self.output("")
+        #self.output2(str(self.sim.iters) +  " out of " + str(self.sim.nIters))
         self.ui.sim_prog_bar.setValue(0)
         
         self.loopThread = LoopThread(self)
@@ -421,9 +429,14 @@ class GUI(QMainWindow):
         self.statsThread.start()
 
 
-    def stop(self):
-
-        self.ui.sim_prog_label.setText("Stopping simulation loop...")
+    def stop(self, finished = True):
+        
+        if (finished):
+            self.output("Simulation is finished !") 
+            self.set_prog_bar(100)
+        else:
+            self.output("Stopping simulation loop...")
+        self.output2("")
         self.sim.go = False
 
         try:
@@ -447,8 +460,8 @@ class GUI(QMainWindow):
         #reset plots
         self.clear_metrics()
         self.clear_plots()       
-        self.ui.sim_prog_label.setText("Reset is complete...")
-
+        self.output("Reset is complete...")
+        self.outpu2("")
     
     def save(self):
             
@@ -463,8 +476,12 @@ class GUI(QMainWindow):
         self.ui.sim_grid_scale_input.insert(str(self.config.tel.telDiam))
         self.ui.sim_num_iter_input.insert(str(self.config.sim.nIters))
         self.ui.sim_sample_rate_input.insert(str(self.config.sim.loopTime))
-        self.ui.sim_type_box.setCurrentIndex(0)
         
+        if (self.config.sim.simType == 'static'):
+            self.ui.sim_type_box.setCurrentIndex(0)
+        else:
+            self.ui.sim_type_box.setCurrentIndex(1)
+
         #optical beam field
         self.ui.beam_power_input.insert(str(self.config.beam.power))
         self.ui.beam_wvl_input.insert(str(self.config.beam.wavelength))
@@ -515,9 +532,9 @@ class GUI(QMainWindow):
         
     def updateStats(self, itersPerSec, timeRemaining):
 
-        self.ui.sim_prog_iters_label.setText(
-                                "Iterations Per Second: %.2f"%(itersPerSec))
-        self.ui.sim_prog_time_label.setText( "Time Remaining: %.2fs"%(timeRemaining) )
+        self.ui.sim_prog_iters_label.setText("Iterations Per Second: %.2f"%(itersPerSec))
+        self.ui.sim_prog_time_label.setText("Time Remaining: %.2fs"%(timeRemaining))
+
     #GUI callbacks
 
     def progressUpdate(self, message, i="", maxIter=""):
@@ -548,6 +565,10 @@ class GUI(QMainWindow):
         #empty queue so only latest update is present
         plotDict = None
         self.updateLock.lock()
+        
+        self.output("Simulation is running.")
+        self.output2(str(self.sim.iters) +  " iteration out of " + str(self.config.sim.nIters))
+
         try:
             while not self.updateQueue.empty():
                 plotDict = self.updateQueue.get_nowait()
@@ -602,7 +623,7 @@ class GUI(QMainWindow):
 
             if (np.any(plotDict["tot_power"]) != None):
 
-                self.ui.sim_total_power_label.setText("Power : "+ str(round(plotDict["tot_power"], 5)) +  " (W)")
+                self.ui.sim_total_power_label.setText("Power : %.2f " %(plotDict["tot_power"]) +  " (W)")
 
             if self.loopRunning:
                 self.update_metrics_plots()
@@ -631,8 +652,8 @@ class GUI(QMainWindow):
         
         self.ui.sim_prog_bar.setValue(100)
         self.statsThread = StatsThread(self.sim) 
-        logger.info("Init plots is complete")
-        logger.info("To begin press START button.") 
+        self.output("Init plots is complete!")
+        self.output2("To begin press START button.") 
     
     def clear_plots(self):
 
