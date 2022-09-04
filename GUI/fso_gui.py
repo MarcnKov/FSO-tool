@@ -88,10 +88,7 @@ class GUI(QMainWindow):
         self.config = self.sim.config
         self.output = self.ui.sim_prog_label.setText
         self.output2 = self.ui.sim_prog_label_2.setText
-        self.set_prog_bar = self.ui.sim_prog_bar.setValue
-
-        self.init_atmos = True
-
+        
         #initialize GUI input fields
         self.init_input_fields()
                 
@@ -99,7 +96,12 @@ class GUI(QMainWindow):
         self.verify_and_set_user_input()
 
         #define other variables
+        self.init_atmos  = True 
         self.loopRunning = False
+        self.stopped     = False
+        
+        self.tot_power = 0
+
         #Init Timer to update plots
         self.updateTimer = QtCore.QTimer()
         self.updateTimer.setInterval(100)
@@ -112,6 +114,7 @@ class GUI(QMainWindow):
         self.initThread = None
         self.loopThread = None
         self.resultPlot = None
+        
         
         #Required for plotting colors
         self.colorList = ["b","g","r","c","m","y","k"]
@@ -181,15 +184,15 @@ class GUI(QMainWindow):
 
         #wind speeds
         self.ui.atmos_wind_speed_input.returnPressed.connect(lambda :
-                self.validate_array(self.ui.atmos_wind_speed_input, self.config.set_windSpeeds, 0, 10000, DBL_TYPE, True))
+                self.validate_array(self.ui.atmos_wind_speed_input, self.config.set_windSpeeds, 0, 10000, DBL_TYPE))
 
         #wind dirs
         self.ui.atmos_wind_dir_input.returnPressed.connect(lambda :
-                self.validate_array(self.ui.atmos_wind_dir_input, self.config.set_windDirs, 0, 360, DBL_TYPE, True))
+                self.validate_array(self.ui.atmos_wind_dir_input, self.config.set_windDirs, 0, 360, DBL_TYPE))
 
         #screen height
         self.ui.atmos_scrn_alt_input.returnPressed.connect(lambda :
-                self.validate_array(self.ui.atmos_scrn_alt_input, self.config.set_scrnHeights, 0, 100000000000, DBL_TYPE, False))
+                self.validate_array(self.ui.atmos_scrn_alt_input, self.config.set_scrnHeights, 0, 100000000000, DBL_TYPE))
 
         #C2n
         self.ui.atmos_c2n_input.returnPressed.connect(lambda :
@@ -197,7 +200,7 @@ class GUI(QMainWindow):
 
         #L0
         self.ui.atmos_L0_input.returnPressed.connect(lambda :
-                self.validate_array(self.ui.atmos_L0_input, self.config.set_L0, 0, 100000000000, DBL_TYPE, True))
+                self.validate_array(self.ui.atmos_L0_input, self.config.set_L0, 0, 100000000000, DBL_TYPE))
 
 
         #check box init
@@ -213,19 +216,20 @@ class GUI(QMainWindow):
                 self.validate_num(self.ui.rx_height_input, self.config.set_height, 0, 10000000, DBL_TYPE))
         #elevation
         self.ui.rx_elevation_input.returnPressed.connect( lambda : 
-                self.validate_num(self.ui.rx_elevation_input, self.config.set_elevationAngle, 0, 180, DBL_TYPE))
+                self.validate_num(self.ui.rx_elevation_input, self.config.set_elevationAngle, 0, 90, DBL_TYPE,
+                                    False, True))
         
-        
-        logger.info("When finished input press INIT button.")
     
     def update_atmos_box(self):
         
         if (self.ui.atmos_checkBox.isChecked()):
             self.init_atmos = True
-            logger.info("Initialize ATMOS upon INIT.")
+            self.output("Initialize ATMOS upon INIT.")
+            self.output2("")
         else:
             self.init_atmos = False
-            logger.info("Don't initialize ATMOS upon INIT.")
+            self.output("Don't initialize ATMOS upon INIT.")
+            self.output2("")
 
     def update_slider(self):
         
@@ -234,7 +238,7 @@ class GUI(QMainWindow):
         self.config.set_wholeScrnSize(slider_value)
         self.ui.atmos_checkBox.setChecked(True) 
 
-    def validate_num(self, input_field, set_field, low, high, digits, atmos = False):
+    def validate_num(self, input_field, set_field, low, high, digits, atmos = False, zenith = False):
 
         if (digits == 0):
             num_type = int 
@@ -257,10 +261,31 @@ class GUI(QMainWindow):
             self.output("Valid range is from " + str(low) +  " to " + str(high))
             input_field.setText('')
         
+        #WARNING --> TO CHANGE VALUE OF THE BOX
         if(atmos == True):
             self.ui.atmos_checkBox.setChecked(True)
-    
-    def validate_array(self, input_field, set_field, low, high, digits, atmos = False):
+
+        if (zenith == True):
+            self.update_r0()
+            
+    def update_r0(self):
+
+        c2n = np.array(self.config.atmos.scrnStrengths, float)
+        dz  = np.array(self.config.atmos.scrnHeights, float)
+        wvl = float(self.config.atmos.wvl)
+
+        r_0i = (0.423*(2*np.pi/wvl)**2*c2n*dz)**(-3/5)
+            
+        r_0i *= np.cos(self.config.rx.elevationAngle)**(3/5)
+
+        r0 = round(np.sum(r_0i**(-5/3))**(-3/5),4)
+            
+        self.config.set_r0(r0)
+        self.ui.atmos_fried_r0_input.clear()
+        self.ui.atmos_fried_r0_input.insert(str(self.config.atmos.r0))
+
+
+    def validate_array(self, input_field, set_field, low, high, digits, c2n = False):
         
         if (digits == 0):
             num_type = int 
@@ -304,14 +329,15 @@ class GUI(QMainWindow):
             self.output2("Valid range is from " + str(low) +  " to " + str(high))
             input_field.setText('')
 
-        if(atmos == True):
-            self.ui.atmos_checkBox.setChecked(True)
-        else:
-            self.output2("No need to reinitialize ATMOS upon INIT.")
         if(len_exceeded):
             input_field.setText('')
             input_field.insert(str(validated_arr)[1:-1])
-
+        
+        #WARNING --> TO PASS THE REAL STATE TO THE CONFIG
+        self.ui.atmos_checkBox.setChecked(True)
+        
+        if(c2n == True):
+            self.update_r0()
 
     def init_metrics_plots(self):
         
@@ -375,8 +401,8 @@ class GUI(QMainWindow):
             self.power_rx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
 
         except AttributeError:
-            logger.info("Power metric plot isn't cleared !")
-        
+            self.output("Power metric plot isn't cleared !")
+            self.output2("")
         try:
             self.sci_idx_ax.clear()
             self.scint_result_plot.canvas.draw()
@@ -391,51 +417,49 @@ class GUI(QMainWindow):
             self.sci_idx_ax.tick_params(axis='both', which='minor', labelsize="xx-small")
 
         except AttributeError:
-            logger.info("Scintillation metric plot isn't cleared !")
-
+            self.output("Scintillation metric plot isn't cleared !")
+            self.output2("")
 
     def init(self):
         
-        self.ui.sim_prog_label.setText("Initializing from configuration file")
-        self.ui.sim_prog_bar.setValue(1)
-        
+        self.output("Initializing... Please wait...")
+        self.output2("")
+        self.config = self.sim.config
         self.iThread = InitThread(self, self.init_atmos)
-        self.iThread.updateProgressSignal.connect(self.progressUpdate)
         
         global FIRST_GUI_START
         if FIRST_GUI_START == True:
             self.iThread.finished.connect(self.init_plots)
             self.iThread.finished.connect(self.init_metrics_plots)
             FIRST_GUI_START = False
-
+        
         self.iThread.start()
-        self.config = self.sim.config
-    
+
     def run(self):
         
         self.startTime = time.time()
 
         self.output("Running simulation loop...")
-        self.output("")
-        #self.output2(str(self.sim.iters) +  " out of " + str(self.sim.nIters))
-        self.ui.sim_prog_bar.setValue(0)
+        self.output2("")
         
         self.loopThread = LoopThread(self)
-        self.loopThread.updateProgressSignal.connect(self.progressUpdate)
+        
         self.statsThread.updateStatsSignal.connect(self.updateStats)
-        self.loopThread.start()
+        self.statsThread.updateProgressSignal.connect(self.progressUpdate)
 
+        self.loopThread.start()
         self.updateTimer.start()
         self.statsThread.start()
 
 
-    def stop(self, finished = True):
+    def stop(self, finished = False):
         
         if (finished):
             self.output("Simulation is finished !") 
-            self.set_prog_bar(100)
         else:
-            self.output("Stopping simulation loop...")
+            self.output("Simulation is stopped !")
+            self.stopped = True
+
         self.output2("")
         self.sim.go = False
 
@@ -461,13 +485,14 @@ class GUI(QMainWindow):
         self.clear_metrics()
         self.clear_plots()       
         self.output("Reset is complete...")
-        self.outpu2("")
-    
+        self.output2("")
+        
     def save(self):
             
         self.startTime = time.time()
 
-        self.ui.sim_prog_label.setText("Saving simulation...")
+        self.output("Saving simulation...")
+        self.output2("")
 
     def init_input_fields(self):
         
@@ -522,7 +547,8 @@ class GUI(QMainWindow):
         if fname:
             self.sim.readParams(fname)
             self.config = self.sim.config
-            logger.info("Configuration file is read...")
+            self.output("Configuration file is read...")
+            self.output2("")
             #self.init_plots()
 
     def reload_param_file(self):
@@ -530,26 +556,22 @@ class GUI(QMainWindow):
         self.sim.readParams()
 
         
-    def updateStats(self, itersPerSec, timeRemaining):
+    def updateStats(self, itersPerSec, timeRemaining, tot_power):
 
         self.ui.sim_prog_iters_label.setText("Iterations Per Second: %.2f"%(itersPerSec))
-        self.ui.sim_prog_time_label.setText("Time Remaining: %.2fs"%(timeRemaining))
+        self.ui.sim_prog_time_label.setText("Time Remaining: %.0f s"%(timeRemaining))
+        self.ui.sim_total_power_label.setText("Tot. power RX : %.2f " %(tot_power) +  " (W)")
+
 
     #GUI callbacks
-
-    def progressUpdate(self, message, i="", maxIter=""):
-
-        if i!="" and maxIter!="":
+    def progressUpdate(self, i, maxIter):
+        
+        if (maxIter > 0):
             percent = int(round(100*(float(i)/float(maxIter))))
-            self.ui.sim_prog_bar.setValue(percent)
-            self.ui.sim_prog_labelsetText(
-                    "{0}: Iteration {1} of {2}".format(message, i, maxIter))
-
         else:
-            if i!="":
-                message+=" {}".format(i)
-            self.ui.sim_prog_label.setText(message)
-    
+            percent = 0
+        self.ui.sim_prog_bar.setValue(percent)
+
     def updateTimeChanged(self):
 
         try:
@@ -566,8 +588,10 @@ class GUI(QMainWindow):
         plotDict = None
         self.updateLock.lock()
         
-        self.output("Simulation is running.")
-        self.output2(str(self.sim.iters) +  " iteration out of " + str(self.config.sim.nIters))
+        #self.output("Simulation is running...")
+        #self.output2(str(self.sim.iters) +  " iteration out of " + str(self.config.sim.nIters))
+        
+        #self.loopThread.progressUpdate(self.sim.iters, self.config.sim.nIters)
 
         try:
             while not self.updateQueue.empty():
@@ -620,11 +644,10 @@ class GUI(QMainWindow):
                     self.c_bar_phase.ax.set_xlabel(r'$\phi (rad)$')
 
                 self.phase_canvas.draw()
-
+            
             if (np.any(plotDict["tot_power"]) != None):
-
-                self.ui.sim_total_power_label.setText("Power : %.2f " %(plotDict["tot_power"]) +  " (W)")
-
+                self.tot_power =  plotDict["tot_power"]
+            
             if self.loopRunning:
                 self.update_metrics_plots()
             self.app.processEvents()
@@ -650,8 +673,7 @@ class GUI(QMainWindow):
         self.sim.gui = True
         self.sim.waitingPlot = False
         
-        self.ui.sim_prog_bar.setValue(100)
-        self.statsThread = StatsThread(self.sim) 
+        self.statsThread = StatsThread(self.sim, self) 
         self.output("Init plots is complete!")
         self.output2("To begin press START button.") 
     
@@ -675,29 +697,37 @@ class GUI(QMainWindow):
 
 class StatsThread(QtCore.QThread):
     
-    updateStatsSignal = QtCore.pyqtSignal(float,float)
-    def __init__(self, sim):
+    updateStatsSignal = QtCore.pyqtSignal(float,float, float)
+    updateProgressSignal = QtCore.pyqtSignal(int,int)
+
+    def __init__(self, sim, guiObj):
         QtCore.QThread.__init__(self)
 
         self.sim = sim
+        self.guiObj = guiObj
 
     def run(self):
         self.startTime = time.time()
 
-        while self.sim.iters+1 < self.sim.config.sim.nIters and self.sim.go:
-            time.sleep(0.2)
+        while self.sim.iters <= self.sim.config.sim.nIters and self.sim.go:
+            
             iTime = time.time()
-            # try:
-            #Calculate and print running stats
             itersPerSec = self.sim.iters / (iTime - self.startTime)
+            
             if itersPerSec == 0:
                 itersPerSec = 0.00001
-            timeRemaining = (self.sim.config.sim.nIters-self.sim.iters)/itersPerSec
-            self.updateStatsSignal.emit(itersPerSec, timeRemaining)
+            
+            timeRemaining = (self.sim.config.sim.nIters-self.sim.iters-1)/itersPerSec
+            
+            self.updateStatsSignal.emit(itersPerSec, timeRemaining, self.guiObj.tot_power)
+            self.updateProgressSignal.emit(self.sim.iters, self.sim.config.sim.nIters-1)
+
+    def progressUpdate(self, i, maxIter):
+        
+        self.updateProgressSignal.emit(i, maxIter)
 
 class InitThread(QtCore.QThread):
 
-    updateProgressSignal = QtCore.pyqtSignal(str,str,str)
     init_done_signal = QtCore.pyqtSignal()
    
     def __init__(self, guiObj, init_atmos):
@@ -705,52 +735,49 @@ class InitThread(QtCore.QThread):
         self.guiObj = guiObj
         self.sim = guiObj.sim
         self.init_atmos = init_atmos
-
+        self.output = self.guiObj.output
+        self.output2 = self.guiObj.output2 
+    
     def run(self):
-        logger.setStatusFunc(self.progressUpdate)
+        
         if self.sim.go:
             self.guiObj.stop()
 
         self.sim.aoinit(init_atmos = self.init_atmos)
-
-    def progressUpdate(self, message, i="", maxIter=""):
-        self.updateProgressSignal.emit(str(message), str(i), str(maxIter))
+        
+        self.output("Initialization is finished !")
+        self.output2("Press START to begin.")
 
 class LoopThread(QtCore.QThread):
 
-    updateProgressSignal = QtCore.pyqtSignal(str,str,str)
 
     def __init__(self, guiObj):
 
         QtCore.QThread.__init__(self)
         #multiprocessing.Process.__init__(self)
         self.guiObj = guiObj
-
         self.sim = guiObj.sim
 
     def run(self):
 
-        logger.setStatusFunc(self.progressUpdate)
         try:
-
+            self.guiObj.output("Simulation is running...")
             self.guiObj.loopRunning = True
             self.sim.aoloop()
             self.guiObj.loopRunning = False
-            self.guiObj.stop()
-       
+            
+            if (self.guiObj.stopped):
+                self.guiObj.stop()
+            else:
+                self.guiObj.stop(True)
+
         except:
 
             self.sim.go = False
             self.guiObj.loopRunning = False
             self.guiObj.stop()
             traceback.print_exc()
-
-
-    def progressUpdate(self, message, i="", maxIter=""):
-
-        self.updateProgressSignal.emit(str(message), str(i), str(maxIter))
-
-
+    
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):

@@ -106,7 +106,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>210</y>
+      <y>220</y>
       <width>151</width>
       <height>21</height>
      </rect>
@@ -132,7 +132,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>210</y>
+      <y>220</y>
       <width>151</width>
       <height>21</height>
      </rect>
@@ -145,7 +145,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>750</y>
+      <y>790</y>
       <width>181</width>
       <height>21</height>
      </rect>
@@ -162,21 +162,21 @@
    <widget class="QLabel" name="rx_elevation_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>780</y>
+      <x>280</x>
+      <y>790</y>
       <width>151</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>Elevation angle  (deg)</string>
+     <string>Elev. angle  (deg)</string>
     </property>
    </widget>
    <widget class="QLabel" name="rx_height_label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>810</y>
+      <y>820</y>
       <width>141</width>
       <height>21</height>
      </rect>
@@ -313,7 +313,7 @@
      <property name="geometry">
       <rect>
        <x>170</x>
-       <y>60</y>
+       <y>70</y>
        <width>91</width>
        <height>25</height>
       </rect>
@@ -323,7 +323,7 @@
      <property name="geometry">
       <rect>
        <x>430</x>
-       <y>60</y>
+       <y>70</y>
        <width>91</width>
        <height>25</height>
       </rect>
@@ -346,7 +346,7 @@
      <property name="geometry">
       <rect>
        <x>170</x>
-       <y>100</y>
+       <y>110</y>
        <width>86</width>
        <height>25</height>
       </rect>
@@ -539,9 +539,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>720</y>
+      <y>760</y>
       <width>531</width>
-      <height>121</height>
+      <height>91</height>
      </rect>
     </property>
     <property name="title">
@@ -636,14 +636,14 @@
      </rect>
     </property>
     <property name="value">
-     <number>24</number>
+     <number>0</number>
     </property>
    </widget>
    <widget class="QLineEdit" name="rx_ap_diam_input">
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>750</y>
+      <y>790</y>
       <width>91</width>
       <height>25</height>
      </rect>
@@ -653,7 +653,7 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>810</y>
+      <y>820</y>
       <width>91</width>
       <height>25</height>
      </rect>
@@ -662,8 +662,8 @@
    <widget class="QLineEdit" name="rx_elevation_input">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>780</y>
+      <x>440</x>
+      <y>790</y>
       <width>91</width>
       <height>25</height>
      </rect>
@@ -730,7 +730,7 @@
     <widget class="QLabel" name="sim_prog_iters_label">
      <property name="geometry">
       <rect>
-       <x>190</x>
+       <x>170</x>
        <y>80</y>
        <width>191</width>
        <height>20</height>
@@ -743,7 +743,7 @@
     <widget class="QLabel" name="sim_total_power_label">
      <property name="geometry">
       <rect>
-       <x>380</x>
+       <x>370</x>
        <y>80</y>
        <width>141</width>
        <height>20</height>
@@ -949,7 +949,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>250</y>
+      <y>260</y>
       <width>141</width>
       <height>21</height>
      </rect>

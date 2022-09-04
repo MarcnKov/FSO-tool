@@ -48,22 +48,16 @@ Examples:
 
 """
 
-import os
-import random
-import time
-
-import numpy
-import scipy.fftpack as fft
-import scipy.interpolate
+import sys, os, random, time, numpy, scipy.fftpack as fft, scipy.interpolate
 
 from matplotlib import pyplot as plt
 
-import sys, os
 sys.path.append(os.getcwd())
 
 import AOFFT, logger, numbalib
 
 from aotools.turbulence import infinitephasescreen, phasescreen
+
 # Use either pyfits or astropy for fits file handling
 try:
     from astropy.io import fits
@@ -104,20 +98,34 @@ class atmos(object):
         self.pixel_scale = 1./self.simConfig.pxlScale
         self.wholeScrnSize = self.config.wholeScrnSize
         self.scrnNo = self.config.scrnNo
-        self.r0 = self.config.r0
         self.L0s = self.config.L0
+        self.r0 = self.config.r0
         self.looptime = self.simConfig.loopTime
+        self.wvl = soapyConfig.beam.wavelength
+        self.height = soapyConfig.rx.height
+        
 
+        '''
         self.config.scrnStrengths = numpy.array(self.config.scrnStrengths,
                 dtype="float32")
-
+        
+        
+        self.dz  = numpy.array(self.config.scrnHeights)
+        self.c2n = numpy.array(self.config.scrnStrengths)
+        
         self.config.normScrnStrengths = self.config.scrnStrengths/(
                             self.config.scrnStrengths[:self.scrnNo].sum())
-        #self.config.scrnHeights = self.config.scrnHeights[:self.scrnNo]
+        
+        
+        if (self.config.r0):
+            self.r0 = self.config.r0
+        else:
+            r_0i = (0.423*(2*numpy.pi/self.wvl)**2*self.c2n*self.dz)**(-3/5)
+            self.r0 = numpy.sum(r_0i**(-5/3))**(-3/5)
 
         self.scrnStrengths = ( ((self.r0**(-5./3.))
                                 *self.config.normScrnStrengths)**(-3./5.) )
-        
+
         # Computes tau0, the AO time constant (Roddier 1981), at current wind speed
         vBar53 = (self.windSpeeds[:self.scrnNo]**(5./3.) * self.config.normScrnStrengths[:self.scrnNo]).sum() ** (3./5.)
         tau0 = 0.314 * self.r0 / vBar53
@@ -130,32 +138,31 @@ class atmos(object):
             # Computes tau0 at scaled wind speeds
             vBar53 = (self.windSpeeds[:self.scrnNo]**(5./3.) * self.config.normScrnStrengths[:self.scrnNo]).sum() ** (3./5.)
             tau0 = 0.314 * self.r0 / vBar53
+        '''
 
-        
         self.scrnPos = {}
         self.wholeScrns = {}
 
         scrnSize = int(round(self.scrn_size))
-
+       
+        '''
         ## Print turbulence summary
         logger.info('| r0 = {0:.2f} m ({1:.2f}" seeing)'.format(self.r0, numpy.degrees(0.5e-6/self.r0)*3600.0))
         logger.info("| Vbar_5/3 = {0:.2f} m/s".format(vBar53))
         logger.info("| tau0 = {0:.2f} ms".format(tau0*1e3))
         logger.info("| scrnSize = {:d} ".format(scrnSize))
+        '''
 
-        
         self.scrns = numpy.zeros((self.scrnNo, self.scrn_size, self.scrn_size))
 
         # The whole screens will be kept at this value, and then scaled to the
         # correct r0 before being sent to the simulation
-        self.wholeScrnR0 = 1. #self.r0
+        #self.wholeScrnR0 = 1. #self.r0
 
         # If required, generate some new Kolmogorov phase screens
         if self.config.infinite:
             self.infinite_phase_screens = []
             for layer in range(self.config.scrnNo):
-                logger.info("Initialise Infinite Phase Screen {}".format(layer+1))
-                #print("Initialise Infinite Phase Screen ",layer)
                 phase_screen = InfinitePhaseScreen(
                         self.scrn_size, self.pixel_scale, self.scrnStrengths[layer],
                         self.L0s[layer], self.windSpeeds[layer], self.looptime, self.windDirs[layer])
@@ -163,43 +170,21 @@ class atmos(object):
 
         else:
             if not self.config.scrnNames:
-                logger.info("Generating Phase Screens")
                 for i in xrange(self.scrnNo):
-                    #logger.info("Generate Finite Phase Screen {0}  with r0: {1:.2f}, size: {2}".format(i,self.scrnStrengths[i], self.wholeScrnSize))
                     if self.config.subHarmonics:
-                        '''
-                        self.wholeScrns[i] = phasescreen.ft_sh_phase_screen(
-                                self.wholeScrnR0,
-                                self.wholeScrnSize, self.pixel_scale,
-                                self.config.L0[i], 0.01)
-                        ''' 
                         
                         self.wholeScrns[i] = phasescreen.ft_sh_phase_screen(
                                 self.r0,
                                 self.wholeScrnSize, self.pixel_scale,
                                 self.config.L0[i], 0.01)
                     else:
-                        '''
-                        self.wholeScrns[i] = phasescreen.ft_phase_screen(
-                                self.wholeScrnR0,
-                                self.wholeScrnSize, self.pixel_scale,
-                                self.config.L0[i], 0.01)
-                        '''
-                        self.wholeScrns[i] = phasescreen.ft_phase_screen(
-                                self.scrnStrengths[i],
-                                self.wholeScrnSize, self.pixel_scale,
-                                self.config.L0[i], self.config.l0)
-                        '''
-                        #TO DELETE: SIMULATION VERIFICATION PURPOSE
                         self.wholeScrns[i] = phasescreen.ft_phase_screen(
                                 self.r0,
                                 self.wholeScrnSize, self.pixel_scale,
-                                self.config.L0[i], 0.01)
-                        '''
+                                self.config.L0[i], self.config.l0)
+                        
                     self.scrns[i] = self.wholeScrns[i][:scrnSize,:scrnSize]
-                    #logger.info("Finite Phase Screen Size {}".format(numpy.shape(self.scrns[i])))
-                logger.info("Phase Screens generation is finished!")
-
+                    
             # Otherwise, load some others from FITS file
             else:
                 logger.info("Loading Phase Screens")
@@ -375,8 +360,9 @@ class atmos(object):
             # Move window coordinates.
             self.scrnPos[i] = self.scrnPos[i] + self.windV[i]#*dt
             self.xCoords[i] += self.windV[i][0].astype('float')
-            self.yCoords[i] += self.windV[i][1].astype('float')
-
+            self.yCoords[i] += self.windV[i][1].astype('float') 
+            
+            '''
             # Calculate the required r0 of each screen from config
             self.config.normScrnStrengths = (
                     self.config.scrnStrengths/
@@ -385,6 +371,8 @@ class atmos(object):
                         *self.config.normScrnStrengths)**(-3./5.))
             # Finally, scale for r0 and turn to nm
             self.scrns[i] *= (self.scrnStrengths[i]/self.wholeScrnR0)**(-5./6.)
+            '''
+
         return self.scrns
         
     #TO DELTE R0 FROM THE FUNCTION ARGUMENT --> SIM VERIFICATION
@@ -402,26 +390,14 @@ class atmos(object):
             if subHarmonics:
                 
                 self.scrns[i] = phasescreen.ft_sh_phase_screen(
-                        self.scrnStrengths[i], self.scrn_size,
-                        self.pixel_scale, self.config.L0[i], l0)
-                '''
-                self.scrns[i] = phasescreen.ft_sh_phase_screen(
-                        self.r0, self.scrn_size,
-                        self.pixel_scale, self.config.L0[i], l0)
-                '''
+                        self.r0[i], self.scrn_size,
+                        self.pixel_scale, self.config.L0[i], self.config.l0)
             else:
                 #SIM VERIFICATION
                 self.scrns[i] = phasescreen.ft_phase_screen(
-                        self.scrnStrengths[i], self.scrn_size,
-                        self.pixel_scale, self.config.L0[i], self.config.l0)
-                '''
-                self.scrns[i] = phasescreen.ft_phase_screen(
                         self.r0, self.scrn_size,
-                        self.pixel_scale, self.config.L0[i], l0)
-                '''
-            # Turn to nm
-            #self.scrns[i] *= (500./(2*numpy.pi))
-
+                        self.pixel_scale, self.config.L0[i], self.config.l0)
+            
         return self.scrns
 
 

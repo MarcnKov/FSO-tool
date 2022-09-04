@@ -358,7 +358,7 @@ class PY_Configurator(object):
         self.rx.height = x
     
     def set_elevationAngle(self, x):
-        self.rx.elevationAngle = x
+        self.rx.elevationAngle = x*numpy.pi/180
     
         
 class YAML_Configurator(PY_Configurator):
@@ -677,9 +677,9 @@ class AtmosConfig(ConfigObj):
     requiredParams = [ "scrnNo",
                         "scrnHeights",
                         "scrnStrengths",
-                        "r0",
                         "windDirs",
                         "windSpeeds",
+                        "wvl"
                         ]
 
     optionalParams = [ ("scrnNames",None),
@@ -687,6 +687,7 @@ class AtmosConfig(ConfigObj):
                         ("L0", None),
                         ("randomScrns", False),
                         ("tau0", None),
+                        ("r0", None),
                         ("infinite", False),
                         ("wholeScrnSize", None),
                         # ("elevationAngle", 90),
@@ -697,6 +698,7 @@ class AtmosConfig(ConfigObj):
     # Parameters which may be set at some point and are allowed
     calculatedParams = [
                         'normScrnStrengths',
+                        'r0'
                         ]
     allowedAttrs = copy.copy(requiredParams + calculatedParams + CONFIG_ATTRIBUTES)
     for p in optionalParams:
@@ -705,13 +707,21 @@ class AtmosConfig(ConfigObj):
 
     def calcParams(self):
         # Turn lists into numpy arrays
-        self.scrnHeights = numpy.array(self.scrnHeights)
-        self.scrnStrengths = numpy.array(self.scrnStrengths)
-        self.windDirs = numpy.array(self.windDirs)
-        self.windSpeeds = numpy.array(self.windSpeeds)
+        self.scrnHeights = numpy.array(self.scrnHeights, float)
+        self.scrnStrengths = numpy.array(self.scrnStrengths, float)
+        self.windDirs = numpy.array(self.windDirs,float)
+        self.windSpeeds = numpy.array(self.windSpeeds, float)
         if self.L0 is not None:
             self.L0 = numpy.array(self.L0)
-        
+
+        if (self.r0 == None):
+            
+            c2n = self.scrnStrengths
+            dz  = self.scrnHeights
+            wvl = float(self.wvl)
+            r_0i = (0.423*(2*numpy.pi/wvl)**2*c2n*dz)**(-3/5)
+            self.r0 = round(numpy.sum(r_0i**(-5/3))**(-3/5),4)
+            
         
 class TelConfig(ConfigObj):
     
@@ -1027,7 +1037,7 @@ class ReceiverConfig(ConfigObj):
         if (self.height is None):
             raise ConfigurationError("Must supply height for Receiver")
         self.height = float(self.height)
-        self.elevationAngle = float(self.elevationAngle)
+        self.elevationAngle = float(self.elevationAngle)*numpy.pi/180
 
 
 def loadSoapyConfig(configfile):

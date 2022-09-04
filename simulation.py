@@ -146,42 +146,8 @@ class Sim(object):
         self.guiQueue = None
         self.go = False
         self._sim_running = False
+        self.iters = 0
     
-    def ft2_ft(self, g, delta):
-        
-        fft_shift   = np.fft.fftshift
-        fft2        = np.fft.fft2
-
-        return fft_shift(fft2(fft_shift(g)))*delta**2
-
-    def ift2_ft(self, G, delta_f):
-        
-        N = np.shape(G)[0]
-
-        ifft_shift   = np.fft.ifftshift
-        ifft2       = np.fft.ifft2
-        
-        return ifft_shift(ifft2(ifft_shift(G)))*(N*delta_f)**2
-
-    def corr2_ft(self,u1, u2, mask, delta):
-
-        N = np.shape(u1)[0]
-        delta_f = 1/(N*delta)
-
-        U1 = self.ft2_ft(u1*mask, delta)
-        U2 = self.ft2_ft(u2*mask, delta)
-        
-        U12corr = self.ift2_ft(np.conj(U1)*U2, delta_f)
-        
-        maskcorr = self.ift2_ft(np.abs(self.ft2_ft(mask,delta))**2, delta_f)*delta**2
-        idx      = maskcorr.astype(bool)
-    
-        U12corr     = np.where(idx, U12corr, 0)
-        maskcorr    = np.where(idx, maskcorr, 0)
-        mask        = np.where(idx, mask,0)
-
-        return (U12corr/maskcorr)*mask
-
     def readParams(self, configFile=None):
         """
         Reads configuration file parameters
@@ -252,12 +218,7 @@ class Sim(object):
         '''
         #DELETE : FOR SIMULATION VERIFICATION        
         
-        self.MCDOC2 = 0
-        self.EMEAN  = 0
-        self.sciIdx = 0
-        #self.config.set_r0(r0)
-        #self.config.set_height(r0) 
-        
+                
         if (init_atmos == True):
             logger.info("Initializing atmosphere object...")
             self.atmos = atmosphere.atmos(self.config)
@@ -282,8 +243,8 @@ class Sim(object):
         
         self.RX_Intensity  = np.zeros(([    self.config.sim.simSize,
                                             self.config.sim.simSize])) 
-        self.powerInstRX  = np.zeros(self.config.sim.nIters)
-        self.scintInstIdx = np.zeros(self.config.sim.nIters)
+        self.powerInstRX  = np.zeros(self.config.sim.nIters+1)
+        self.scintInstIdx = np.zeros(self.config.sim.nIters+1)
         
         # Init performance tracking
 
@@ -309,7 +270,6 @@ class Sim(object):
         self.compute_metrics()
         #self.update_plots()
         
-        #self.validate()
         # Get next phase screens
         t = time.time()
         
@@ -334,14 +294,6 @@ class Sim(object):
         
         self.iters += 1
     
-    def validate(self):
-        
-        self.MCF2 += self.corr2_ft( self.EField,
-                                    self.EField,
-                                    self.los.mask,
-                                    self.los.in_pxl_scale)
-        
-        #self.MCF2 += np.conj(self.EField) @ self.EField 
     def update_plots(self):
         '''
         If plot output is specified, plot instantanous metrics,
@@ -393,8 +345,6 @@ class Sim(object):
         try:
             while self.iters < self.config.sim.nIters:
                 if self.go:
-                    logger.info("{} iteration out of {}".format(self.iters+1,
-                                                                self.config.sim.nIters))
                     self.loopFrame()
                 else:
                     break
@@ -402,9 +352,7 @@ class Sim(object):
             self.go = False
             logger.info("\nSim exited by user\n")
 
-        # Finally save data after loop is over.
         self.saveData()
-        self.finishUp()
 
     def start_aoloop_thread(self):
         """
@@ -465,31 +413,7 @@ class Sim(object):
 
         #reset plots
         self.reset = True
-    
-    def finishUp(self):
         
-        """
-        Prints a message to the console giving timing data. Used on sim end.
-        """
-        '''
-        plt.imshow(self.summedIntensity)
-        plt.show()
-        plt.imshow(abs(np.fft.fft2(self.summedIntensity)))
-        plt.show()      
-        '''
-        
-        logger.info("Power at RX: mean {:0.5f} (mW) std {:0.7f} (mW)".format(1e3*np.mean(self.powerInstRX),
-                                                        1e3*np.std(self.powerInstRX)))
-
-        logger.info("Scintillation idx at RX: mean {:0.5f}, std {:0.7f}".format(  np.mean(self.scintInstIdx),
-                                                                        np.std(self.scintInstIdx)))
-        logger.info("Final power P = {} ".format(self.SimHelper.calc_tot_power()))
-        logger.info("Time moving atmosphere: {:0.3f} (s)".format(self.Tatmos))
-        logger.info("Time propagating Field through the atmoshpere: {:0.3f} (s)".format(self.Tlos))
-        '''
-        self.MCF2 = np.matrix(np.abs(self.MCF2))
-        self.MCDOC2 = self.MCF2/np.max(self.MCF2)
-        ''' 
     def initSaveData(self):
         '''
         Initialise data structures used for data saving.
