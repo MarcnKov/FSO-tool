@@ -286,7 +286,7 @@ class PY_Configurator(object):
         self.rx.height = x
     
     def set_elevationAngle(self, x):
-        self.rx.elevationAngle = x*numpy.pi/180
+        self.rx.elevationAngle = x
     
     def set_orbitalAltitude(self,x):
 
@@ -791,10 +791,11 @@ class ReceiverConfig(ConfigObj):
         
         alpha = self.elevationAngle*numpy.pi/180
         R_e = 6.371*1e6
-        self.orbitalAltitude = ( (self.height + R_e)**2 - R_e**2*numpy.cos(alpha)**2 )**(1/2)\
+        self.orbitalAltitude = ((self.height + R_e)**2 -
+                                R_e**2*numpy.cos(alpha)**2)**(1/2)\
                             - R_e*numpy.sin(alpha)
 
-
+        logger.info("RX orbitalAltitude{}".format(self.orbitalAltitude))
 def loadSoapyConfig(configfile):
 
     # Find configfile extension

@@ -265,17 +265,22 @@ class GUI(QMainWindow):
         #WARNING --> TO CHANGE VALUE OF THE BOX
         if(atmos == True):
             self.ui.atmos_checkBox.setChecked(True)
-
-        if (zenith == True):
-            self.update_r0()
+        
+        if (zenith):
             
-            R_earth =   6.371*1e6
-            alpha   =   self.config.rx.elevationAngle
-            height  =   self.config.rx.height
+            self.update_r0()
 
+            R_earth =   6.371*1e6
+            alpha   =   float(self.config.rx.elevationAngle)*np.pi/180
+            height  =   self.config.rx.height
+                        
             orbitalAltitude = ( (height + R_earth)**2 - \
                                 R_earth**2*np.cos(alpha)**2 )**(1/2) \
                                 - R_earth*np.sin(alpha)
+            
+            logger.info("alpha = {}".format(alpha))
+            logger.info("height = {}".format(height))
+            logger.info("altitude = {}".format(orbitalAltitude))
 
             self.config.set_orbitalAltitude(orbitalAltitude)
             self.ui.rx_altitude_label.setText("Orbital alt. : " + str(round(orbitalAltitude/1e3, 2)) + ' (km)')
@@ -285,11 +290,10 @@ class GUI(QMainWindow):
         c2n = np.array(self.config.atmos.scrnStrengths, float)
         dz  = np.array(self.config.atmos.scrnHeights, float)
         wvl = float(self.config.atmos.wvl)
+        alpha = float(self.config.rx.elevationAngle)*np.pi/180
 
         r_0i = (0.423*(2*np.pi/wvl)**2*c2n*dz)**(-3/5)
-            
-        r_0i *= np.cos(float(self.config.rx.elevationAngle))**(3/5)
-
+        r_0i *= np.cos(alpha)**(3/5)
         r0 = round(np.sum(r_0i**(-5/3))**(-3/5),4)
             
         self.config.set_r0(r0)

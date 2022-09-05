@@ -118,7 +118,7 @@ class LineOfSight(object):
         
         self.sim_size = self.soapy_config.sim.simSize
         self.mask = mask 
-        self.source_altitude = self.height
+        self.source_altitude = self.soapy_config.rx.orbitalAltitude
         self.nx_scrn_size = self.soapy_config.sim.scrnSize
         self.n_layers = self.soapy_config.atmos.scrnNo
         self.layer_altitudes = self.soapy_config.atmos.scrnHeights
@@ -135,13 +135,13 @@ class LineOfSight(object):
         #self.allocDataArrays()
 
     # Some attributes for compatability between WFS and others
+    '''
     @property
     def height(self):
         try:
             return self.soapy_config.rx.orbitalAltitude
         except AttributeError:
             return 1e3 
-    '''
     @height.setter
     def height(self, height):
         try:
@@ -287,10 +287,9 @@ class LineOfSight(object):
     def zeroData(self, **kwargs):
 
         """
-        Sets the phase and complex amp data to zero
+        Sets the phase and data to zero
         """
         self.EField[:] = 1
-        #self.phase_screens[:] = 0
 
     def physical_atmosphere_propagation(self):
         
@@ -307,8 +306,9 @@ class LineOfSight(object):
 
         z_total  = 0 
         ht       = 0                 
-        ht_final = self.soapy_config.rx.orbitalAltitude 
-        
+        ht_final = self.source_altitude
+
+        logger.info("Altitude {}".format(ht_final)) 
         # Propagate to first phase screen (if not already there)
         #TO CORRECT <-- WILL RESULT IN A BUG
         #CAN BE FURTHER OPTIMIZED --> MOVE TO CALCINITPARAMS

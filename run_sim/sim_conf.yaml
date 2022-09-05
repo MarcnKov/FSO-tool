@@ -4,7 +4,7 @@ pupilSize: 1000
 nSci: 1
 nIters: 10
 loopTime: .001 
-verbosity: 0
+verbosity: 3
 simOversize: 1
 simType: dynamic
 
@@ -35,4 +35,4 @@ Beam:
 Receiver:
     diameter: 250.0e-3
     height: 1000 
-    elevationAngle: 45
+    elevationAngle: 30
