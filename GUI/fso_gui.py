@@ -99,7 +99,8 @@ class GUI(QMainWindow):
         self.init_atmos  = True 
         self.loopRunning = False
         self.stopped     = False
-        
+        self.restart     = False
+
         self.tot_power = 0
 
         #Init Timer to update plots
@@ -213,12 +214,12 @@ class GUI(QMainWindow):
                 self.validate_num(self.ui.rx_ap_diam_input, self.config.set_diameter, 0, 10000, DBL_TYPE))
         #height
         self.ui.rx_height_input.returnPressed.connect( lambda : 
-                self.validate_num(self.ui.rx_height_input, self.config.set_height, 0, 10000000, DBL_TYPE))
+                self.validate_num(self.ui.rx_height_input, self.config.set_height, 0, 10000000, DBL_TYPE,
+                    False, True))
         #elevation
         self.ui.rx_elevation_input.returnPressed.connect( lambda : 
                 self.validate_num(self.ui.rx_elevation_input, self.config.set_elevationAngle, 0, 90, DBL_TYPE,
                                     False, True))
-        
     
     def update_atmos_box(self):
         
@@ -268,6 +269,17 @@ class GUI(QMainWindow):
         if (zenith == True):
             self.update_r0()
             
+            R_earth =   6.371*1e6
+            alpha   =   self.config.rx.elevationAngle
+            height  =   self.config.rx.height
+
+            orbitalAltitude = ( (height + R_earth)**2 - \
+                                R_earth**2*np.cos(alpha)**2 )**(1/2) \
+                                - R_earth*np.sin(alpha)
+
+            self.config.set_orbitalAltitude(orbitalAltitude)
+            self.ui.rx_altitude_label.setText("Orbital alt. : " + str(round(orbitalAltitude/1e3, 2)) + ' (km)')
+
     def update_r0(self):
 
         c2n = np.array(self.config.atmos.scrnStrengths, float)
@@ -276,7 +288,7 @@ class GUI(QMainWindow):
 
         r_0i = (0.423*(2*np.pi/wvl)**2*c2n*dz)**(-3/5)
             
-        r_0i *= np.cos(self.config.rx.elevationAngle)**(3/5)
+        r_0i *= np.cos(float(self.config.rx.elevationAngle))**(3/5)
 
         r0 = round(np.sum(r_0i**(-5/3))**(-3/5),4)
             
@@ -306,6 +318,15 @@ class GUI(QMainWindow):
             self.output("Array size can't be greater than Number of screens !")
             input_arr = input_arr[0:self.config.atmos.scrnNo]
             len_exceeded = True
+
+        if (len(input_arr) < self.config.atmos.scrnNo):
+            
+            self.output("Array size can't be smaller than Number of screens !")
+            self.config.set_scrnNo(len(input_arr))
+            self.ui.atmos_n_scrn_input.clear()
+            self.ui.atmos_n_scrn_input.insert(str(self.config.atmos.scrnNo))
+            input_arr = input_arr[0:self.config.atmos.scrnNo]
+
 
         for input_num in input_arr:
             
@@ -442,6 +463,7 @@ class GUI(QMainWindow):
         self.output("Running simulation loop...")
         self.output2("")
         
+        self.statsThread = StatsThread(self.sim, self) 
         self.loopThread = LoopThread(self)
         
         self.statsThread.updateStatsSignal.connect(self.updateStats)
@@ -457,7 +479,7 @@ class GUI(QMainWindow):
         if (finished):
             self.output("Simulation is finished !") 
         else:
-            self.output("Simulation is stopped !")
+            self.output("Simulation is finished !")
             self.stopped = True
 
         self.output2("")
@@ -486,6 +508,9 @@ class GUI(QMainWindow):
         self.clear_plots()       
         self.output("Reset is complete...")
         self.output2("")
+
+        self.statsThread.updateStatsSignal.emit(0, 0, 0)
+        self.statsThread.updateProgressSignal.emit(0, 0)
         
     def save(self):
             
@@ -511,7 +536,6 @@ class GUI(QMainWindow):
         self.ui.beam_power_input.insert(str(self.config.beam.power))
         self.ui.beam_wvl_input.insert(str(self.config.beam.wavelength))
         self.ui.beam_waist_input.insert(str(self.config.beam.beamWaist))
-        self.ui.beam_prop_dir_box.setCurrentIndex(0)
         self.ui.beam_type_box.setCurrentIndex(0)
 
         if (self.config.beam.propagationDir == 'up'):
@@ -537,7 +561,8 @@ class GUI(QMainWindow):
         self.ui.rx_ap_diam_input.insert(str(self.config.rx.diameter))
         self.ui.rx_height_input.insert(str(self.config.rx.height))
         self.ui.rx_elevation_input.insert(str(self.config.rx.elevationAngle))
-        
+        self.ui.rx_altitude_label.setText("Orbital alt. : " + str(round(self.config.rx.orbitalAltitude/1e3, 2)) + ' (km)')
+
     
     def read_param_file(self):
 
@@ -560,7 +585,7 @@ class GUI(QMainWindow):
 
         self.ui.sim_prog_iters_label.setText("Iterations Per Second: %.2f"%(itersPerSec))
         self.ui.sim_prog_time_label.setText("Time Remaining: %.0f s"%(timeRemaining))
-        self.ui.sim_total_power_label.setText("Tot. power RX : %.2f " %(tot_power) +  " (W)")
+        self.ui.sim_total_power_label.setText("Tot. pow. RX : %.2f " %(tot_power) +  " (W)")
 
 
     #GUI callbacks
@@ -617,7 +642,7 @@ class GUI(QMainWindow):
                 self.intensity_canvas.axes.set_title(
                                                     self.config.beam.propagationDir     +
                                                     'link gaussian beam intensity at '  +
-                                                    str(self.config.rx.height/1000) +  
+                                                    str(round(self.config.rx.orbitalAltitude/1e3,2)) +  
                                                     ' (km)', fontsize = 8)
 
                 self.intensity_canvas.axes.set_xlabel(r'$x_n/2$' + ' (m)', fontsize = 5)
@@ -673,7 +698,7 @@ class GUI(QMainWindow):
         self.sim.gui = True
         self.sim.waitingPlot = False
         
-        self.statsThread = StatsThread(self.sim, self) 
+        #self.statsThread = StatsThread(self.sim, self) 
         self.output("Init plots is complete!")
         self.output2("To begin press START button.") 
     
@@ -708,7 +733,6 @@ class StatsThread(QtCore.QThread):
 
     def run(self):
         self.startTime = time.time()
-
         while self.sim.iters <= self.sim.config.sim.nIters and self.sim.go:
             
             iTime = time.time()
@@ -717,7 +741,7 @@ class StatsThread(QtCore.QThread):
             if itersPerSec == 0:
                 itersPerSec = 0.00001
             
-            timeRemaining = (self.sim.config.sim.nIters-self.sim.iters-1)/itersPerSec
+            timeRemaining = (self.sim.config.sim.nIters-self.sim.iters)/itersPerSec
             
             self.updateStatsSignal.emit(itersPerSec, timeRemaining, self.guiObj.tot_power)
             self.updateProgressSignal.emit(self.sim.iters, self.sim.config.sim.nIters-1)
@@ -741,7 +765,7 @@ class InitThread(QtCore.QThread):
     def run(self):
         
         if self.sim.go:
-            self.guiObj.stop()
+            self.guiObj.stop(True)
 
         self.sim.aoinit(init_atmos = self.init_atmos)
         

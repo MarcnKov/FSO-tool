@@ -182,7 +182,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Orbital altitude (m)</string>
+     <string>Orbital height (m)</string>
     </property>
    </widget>
    <widget class="QLabel" name="atmos_n_scrn_label">
@@ -547,6 +547,19 @@
     <property name="title">
      <string>RECEIVER</string>
     </property>
+    <widget class="QLabel" name="rx_altitude_label">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>60</y>
+       <width>251</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="run_sim_groupBox">
     <property name="geometry">
@@ -745,7 +758,7 @@
       <rect>
        <x>370</x>
        <y>80</y>
-       <width>141</width>
+       <width>161</width>
        <height>20</height>
       </rect>
      </property>

@@ -138,9 +138,9 @@ class LineOfSight(object):
     @property
     def height(self):
         try:
-            return self.soapy_config.rx.height
+            return self.soapy_config.rx.orbitalAltitude
         except AttributeError:
-            return 700e3 
+            return 1e3 
     '''
     @height.setter
     def height(self, height):
@@ -307,7 +307,7 @@ class LineOfSight(object):
 
         z_total  = 0 
         ht       = 0                 
-        ht_final = self.source_altitude  
+        ht_final = self.soapy_config.rx.orbitalAltitude 
         
         # Propagate to first phase screen (if not already there)
         #TO CORRECT <-- WILL RESULT IN A BUG

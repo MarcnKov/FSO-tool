@@ -4,7 +4,7 @@ pupilSize: 1000
 nSci: 1
 nIters: 10
 loopTime: .001 
-verbosity: 3
+verbosity: 0
 simOversize: 1
 simType: dynamic
 
@@ -35,15 +35,4 @@ Beam:
 Receiver:
     diameter: 250.0e-3
     height: 1000 
-    elevationAngle: 0
-
-Science:
-  0:
-    type: PSF
-    position: [0, 0]
-    FOV: 1.0
-    wavelength: 1.55e-6
-    propagationMode: Physical
-    propagationDir: down
-    pxls: 64
-    height: 700000
+    elevationAngle: 45

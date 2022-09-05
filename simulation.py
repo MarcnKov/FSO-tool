@@ -249,12 +249,13 @@ class Sim(object):
         # Init performance tracking
 
         self.iters  = 0
-        self.MCF2   = 0 #sim validation
 
         self.Tlos   = 0
         self.Tatmos = 0
         self.Tsim   = 0
         
+        self.reset = False
+
         logger.info("Initialisation Complete. Press START !")
         
 

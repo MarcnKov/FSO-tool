@@ -113,7 +113,7 @@ class PY_Configurator(object):
         self.filename = filename
 
         # placeholder for param objs
-        self.scis = []
+        #self.scis = []
 
         self.telDiam = 0
         self.simSize = 0
@@ -151,13 +151,6 @@ class PY_Configurator(object):
         logger.debug("\nLoad Telescope Params...")
         self.tel.loadParams(self.configDict["Telescope"])
         
-        '''
-        for sci in range(self.sim.nSci):
-            logger.debug("Load Science {} Params".format(sci))
-            self.scis.append(SciConfig(sci))
-            self.scis[sci].loadParams(self.configDict["Science"])
-        '''
-
         logger.info("\nLoad Beam Params...")
         self.beam.loadParams(self.configDict["Beam"])
         
@@ -181,10 +174,7 @@ class PY_Configurator(object):
         self.tel.calcParams()
         self.beam.calcParams()
         self.rx.calcParams()
-
-        for s in self.scis:
-            if s is not None:
-                s.calcParams()
+        
         
         #-----------------------IMPORTANT-------------------#
         self.sim.pxlScale = (float(self.sim.pupilSize)/
@@ -197,48 +187,6 @@ class PY_Configurator(object):
         self.sim.simSize = self.sim.pupilSize + 2 * self.sim.simPad
         self.simSize = self.sim.simSize
         
-        '''
-        # Furthest out GS or SCI target defines the sub-scrn size
-        gsPos = []
-        for gs in range(self.sim.nGS):
-            pos = self.wfss[gs].GSPosition.astype('float')
-
-            # Need to add bit if the GS is an elongated off-axis LGS
-            if (hasattr(self.wfss[gs].lgs, 'elongationDepth')
-                    and self.wfss[gs].lgs.elongationDepth != 0):
-                # This calculation is done more explicitely in the WFS module
-                # in the ``calcElongPos`` method
-                maxLaunch = abs(numpy.array(
-                        self.wfss[gs].lgs.launchPosition)).max()*self.tel.telDiam/2.
-                dh = numpy.array([  -1*self.wfss[gs].lgs.elongationDepth/2.,
-                                    self.wfss[gs].lgs.elongationDepth/2.])
-                H = self.wfss[gs].GSHeight
-                theta_n = (max(pos) - (dh*maxLaunch)/(H*(H+dh))*
-                        RAD2ASEC).max()
-                pos += theta_n
-            gsPos.append(abs(numpy.array(pos)))
-        
-        for sci in range(self.sim.nSci):
-            gsPos.append(self.scis[sci].position)
-
-        if len(gsPos)!=0:
-            maxGSPos = numpy.array(gsPos).max()
-        else:
-            maxGSPos = 0
-
-        self.sim.scrnSize = numpy.ceil(2*
-                self.sim.pxlScale * self.atmos.scrnHeights.max()
-                * abs(maxGSPos) * ASEC2RAD)+self.sim.simSize
-        '''       
-        
-        '''
-        self.sim.scrnSize = numpy.ceil(2*
-                self.sim.pxlScale * self.atmos.scrnHeights.max()
-                * abs(self.scis[0].height) * ASEC2RAD)+self.sim.simSize
-        
-
-        self.sim.scrnSize = int(round(self.sim.scrnSize))
-        '''
         self.sim.scrnSize = int(round(self.sim.simSize))
 
         # Make scrn_size even
@@ -258,36 +206,16 @@ class PY_Configurator(object):
             for scrn in range(self.atmos.scrnNo):
                 self.atmos.L0.append(10e9)
         
-        '''
-        # Check if SH WFS with 1 subap. Feild stop must be FOV
-        for wfs in self.wfss:
-            if wfs.nxSubaps==1 and wfs.subapFieldStop==False:
-                logger.warning("Setting WFS:{} to have field stop at sub-ap FOV as it only has 1 sub-aperture".format(wfs))
-                wfs.subapFieldStop = True
-
-        # If dm diameter is None, set to telescope diameter
-        for dm in self.dms:
-            if dm.diameter is None:
-                dm.diameter = self.tel.telDiam
-        '''
 
     def __iter__(self):
         
         objs = {'Sim': dict(self.sim),
                 'Atmosphere': dict(self.atmos),
                 'Telescope': dict(self.tel),
-                'Science': {},
                 'Beam': dict(self.beam),
                 'Receiver': dict(self.rx)
                 }
         
-        '''
-        for s_i, s in enumerate(self.scis):
-            if s is not None:
-                objs['Science'][s_i] = dict(s)
-            else:
-                objs['Science'][s_i] = None
-        '''
         for configName, configObj in objs.items():
             yield configName, configObj
 
@@ -360,7 +288,10 @@ class PY_Configurator(object):
     def set_elevationAngle(self, x):
         self.rx.elevationAngle = x*numpy.pi/180
     
-        
+    def set_orbitalAltitude(self,x):
+
+        self.rx.orbitalAltitude = x
+
 class YAML_Configurator(PY_Configurator):
 
     def readfile(self):
@@ -385,15 +316,7 @@ class YAML_Configurator(PY_Configurator):
 
         logger.debug("\nLoad Telescope Params...")
         self.tel.loadParams(self.configDict["Telescope"])
-        
-        for nSci in range(self.sim.nSci):
-            
-            logger.debug("Load Science {} Params".format(nSci))
-            sciDict = self.configDict['Science'][nSci]
 
-            self.scis.append(SciConfig(None))
-            self.scis[nSci].loadParams(sciDict)
-        
         logger.info("\nLoad Beam Params...")
         self.beam.loadParams(self.configDict["Beam"])
         
@@ -760,179 +683,6 @@ class TelConfig(ConfigObj):
     for p in optionalParams:
         allowedAttrs.append(p[0])
 
-'''
-class LgsConfig(ConfigObj):
-    """
-        Configuration parameters characterising the Laser Guide Stars. These should be held in the ``LGS`` sub-group of the WFS parameter group.
-
-
-    Optional:
-        ==================== =================================   ===========
-        **Parameter**        **Description**                     **Default**
-        -------------------- ---------------------------------   -----------
-        ``uplink``           bool: Include LGS uplink effects    ``False``
-        ``pupilDiam``        float: Diameter of LGS launch
-                             aperture in metres.                 ``0.3``
-        ``wavelength``       float: Wavelength of laser beam
-                             in metres                           ``600e-9``
-        ``propagationMode``  str: Mode of light propogation
-                             from GS. Can be "Physical" or
-                             "Geometric".                        ``"Phsyical"``
-        ``height``           float: Height to use physical
-                             propogation of LGS (does not
-                             effect cone-effect) in metres       ``90000``
-        ``elongationDepth``  float:
-                             Depth of LGS elongation in metres   ``0``
-        ``elongationLayers`` int:
-                             Number of layers to simulate for
-                             elongation.                         ``10``
-        ``launchPosition``   tuple: The launch position of
-                             the LGS in units of the pupil
-                             radii, where ``(0,0)`` is the
-                             centre launched case, and
-                             ``(1,0)`` is side-launched.          ``(0,0)``
-        ``fftwThreads``      int: number of threads for fftw
-                             to use. If ``0``, will use
-                             system processor number.             ``1``
-        ``fftwFlag``         str: Flag to pass to FFTW
-                             when preparing plan.                 ``FFTW_PATIENT``
-        ``naProfile``        list: The relative sodium layer
-                             strength for each elongation
-                             layer. If None, all equal.          ``None``
-        ==================== =================================   ===========
-
-    """
-
-    requiredParams = [ ]
-
-    optionalParams = [  ("uplink", False),
-                        ("pupilDiam", 0.3),
-                        ("wavelength", 600e-9),
-                        ("propagationMode", "Physical"),
-                        ("height", 90000),
-                        ("fftwFlag", "FFTW_PATIENT"),
-                        ("fftwThreads", 0),
-                        ("elongationDepth", 0),
-                        ("elongationLayers", 10),
-                        ("launchPosition",  numpy.array([0,0])),
-                        ("naProfile", None),
-                        ]
-    calculatedParams = ["position"]
-
-    allowedAttrs = copy.copy(
-            requiredParams + calculatedParams + CONFIG_ATTRIBUTES)
-    for p in optionalParams:
-        allowedAttrs.append(p[0])
-
-    def calcParams(self):
-
-        # If lgs sodium layer profile is none, set it to 1s for each layer
-        if not hasattr(self, "naProfile") or self.naProfile is None:
-            self.naProfile = numpy.ones(self.elongationLayers)
-
-        if len(self.naProfile)<self.elongationLayers:
-            raise ConfigurationError("Not enough values for naProfile")
-
-        self.wavelength = float(self.wavelength)
-        self.height = float(self.height)
-'''
-
-class SciConfig(ConfigObj):
-    
-    """
-    Configuration parameters characterising Science Cameras.
-
-    These should be held in the ``Science`` of the parameter file.
-    Each Science target is created seperately with an integer index.
-    Any entries above ``sim.nSci`` will be ignored.
-
-    Required:
-        ==================      ============================================
-        **Parameter**           **Description**
-        ------------------      --------------------------------------------
-        ``position``            tuple: The position of the science camera
-                                in the field in arc-seconds
-        ``FOV``                 float: The field of fiew of the science
-                                detector in arc-seconds
-        ``wavelength``          float: The wavelength of the science
-                                detector light
-        ``pxls``                int: Number of pixels in the science detector
-        ==================      ============================================
-
-    Optional:
-        ==================== =================================   ===========
-        **Parameter**        **Description**                     **Default**
-        -------------------- ---------------------------------   -----------
-        ``pxlScale``         float: Pixel scale of science 
-                             camera, in arcseconds. If set, 
-                             overwrites ``FOV``.                 ``None``
-        ``type``             string: Type of science camera
-                             This must the name of a class
-                             in the ``SCI`` module.              ``PSF``
-        ``fftOversamp``      int: Multiplied by the number of
-                             of phase points required for FOV
-                             to increase fidelity from FFT.      ``2``
-        ``fftwThreads``      int: number of threads for fftw
-                             to use. If ``0``, will use
-                             system processor number.             ``1``
-        ``fftwFlag``         str: Flag to pass to FFTW
-                             when preparing plan.                 ``FFTW_MEASURE``
-         ``height``          float: Altitude of the object.
-                             0 denotes infinity.                  ``0``
-        ``propagationMode``  str: Mode of light propogation
-                             from object. Can be "Physical" or
-                             "Geometric".                        ``"Geometric"``
-        ``propagationDir``   str: Direction to propagatate.
-                             Either ``up`` or ``down``           ``down``
-        ``instStrehlWithTT`` bool: Whether or not to include
-                             tip/tilt in instantaneous Strehl
-                             calculations.                       ``False``
-        ``loadModule``       str: External module to load,       ``None``
-                             where the specified science 
-                             object is stored.  
-        ==================== =================================   ===========
-
-    """
-
-
-    requiredParams = [  "position",
-                        "wavelength",
-                        "pxls",
-                        ]
-    optionalParams = [  ("pxlScale", None),
-                        ("FOV", None),
-                        ("type", "PSF"),
-                        ("fftOversamp", 2),
-                        ("fftwFlag", "FFTW_MEASURE"),
-                        ("fftwThreads", 1),
-                        ("instStrehlWithTT", False),
-                        ("height", 0),
-                        ("propagationMode", "Geometric"),
-                        ("loadModule", None),
-                        ("propagationDir", "down")
-                        ]
-
-    calculatedParams = [
-                            ]
-
-    allowedAttrs = copy.copy(requiredParams + calculatedParams + CONFIG_ATTRIBUTES)
-    for p in optionalParams:
-        allowedAttrs.append(p[0])
-
-    def calcParams(self):
-        # Set some parameters to correct type
-        self.position = numpy.array(self.position)
-        self.wavelength = float(self.wavelength)
-
-        if (self.pxlScale is None) and (self.FOV is None):
-            raise ConfigurationError("Must supply either FOV or pxlScale for SCI")
-
-        if (self.pxlScale is not None) and ((self.pxlScale * self.pxls) != self.FOV):
-            logger.warning("Overriding sci FOV with pxlscale")
-            self.FOV = self.pxlScale * self.pxls
-        else:
-            self.pxlScale = float(self.FOV)/self.pxls
-
 class BeamConfig(ConfigObj):
     
     """
@@ -1019,7 +769,7 @@ class ReceiverConfig(ConfigObj):
                         "height"
                         ]
 
-    calculatedParams = []
+    calculatedParams = ["orbitalAltitude"]
      
     optionalParams = [("elevationAngle", 90)]
 
@@ -1037,7 +787,12 @@ class ReceiverConfig(ConfigObj):
         if (self.height is None):
             raise ConfigurationError("Must supply height for Receiver")
         self.height = float(self.height)
-        self.elevationAngle = float(self.elevationAngle)*numpy.pi/180
+        self.elevationAngle = float(self.elevationAngle)
+        
+        alpha = self.elevationAngle*numpy.pi/180
+        R_e = 6.371*1e6
+        self.orbitalAltitude = ( (self.height + R_e)**2 - R_e**2*numpy.cos(alpha)**2 )**(1/2)\
+                            - R_e*numpy.sin(alpha)
 
 
 def loadSoapyConfig(configfile):
